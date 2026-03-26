@@ -41,6 +41,24 @@ export async function compareJDs({ cv_content, jds }) {
 }
 
 /**
+ * Nộp Survey SCLS Connect 2026
+ */
+export async function submitSurvey(surveyData) {
+    const response = await fetch("/api/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(surveyData),
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Gửi survey thất bại: ${error}`);
+    }
+
+    return response.json();
+}
+
+/**
  * Health check
  */
 export async function healthCheck() {
