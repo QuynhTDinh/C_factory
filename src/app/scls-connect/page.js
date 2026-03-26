@@ -24,9 +24,9 @@ const POSITIONS = [
  * RadarChart Component (SVG)
  * Shows User vs Benchmark
  */
-function RadarChart({ data, size = 300 }) {
+function RadarChart({ data, size = 320 }) {
     const points = data.length;
-    const radius = size / 2 - 40;
+    const radius = size / 2 - 50;
     const center = size / 2;
 
     const getCoordinates = (index, value, max = 5) => {
@@ -38,58 +38,41 @@ function RadarChart({ data, size = 300 }) {
         };
     };
 
-    // User Polygon
     const userPath = data.map((d, i) => {
         const { x, y } = getCoordinates(i, d.user);
         return `${x},${y}`;
     }).join(" ");
 
-    // Benchmark Polygon
     const targetPath = data.map((d, i) => {
         const { x, y } = getCoordinates(i, d.target);
         return `${x},${y}`;
     }).join(" ");
 
-    // Web/Grid
-    const gridLevels = [1, 2, 3, 4, 5];
-
     return (
-        <svg width={size} height={size} className="mx-auto overflow-visible">
+        <svg width={size} height={size} style={{ overflow: 'visible' }}>
             {/* Grid Lines */}
-            {gridLevels.map(level => (
+            {[1, 2, 3, 4, 5].map(level => (
                 <polygon
                     key={level}
                     points={data.map((_, i) => {
                         const { x, y } = getCoordinates(i, level);
                         return `${x},${y}`;
                     }).join(" ")}
-                    className="fill-none stroke-gray-200"
+                    style={{ fill: 'none', stroke: '#E5E5E5', strokeWidth: 1 }}
                 />
             ))}
 
             {/* Target Area (SCLS Green) */}
-            <polygon
-                points={targetPath}
-                className="fill-scls-green/10 stroke-scls-green/30 stroke-2"
-            />
+            <polygon points={targetPath} style={{ fill: 'rgba(0, 90, 49, 0.08)', stroke: 'rgba(0, 90, 49, 0.2)', strokeWidth: 2 }} />
 
             {/* User Area (HUST Maroon) */}
-            <polygon
-                points={userPath}
-                className="fill-hust-maroon/40 stroke-hust-maroon stroke-2 transition-all duration-1000"
-            />
+            <polygon points={userPath} style={{ fill: 'rgba(139, 29, 29, 0.35)', stroke: '#8B1D1D', strokeWidth: 2.5 }} className="animate-in" />
 
             {/* Labels */}
             {data.map((d, i) => {
-                const { x, y } = getCoordinates(i, 5.8); // Offset labels
+                const { x, y } = getCoordinates(i, 5.8);
                 return (
-                    <text
-                        key={i}
-                        x={x}
-                        y={y}
-                        textAnchor="middle"
-                        className="text-[10px] font-bold fill-gray-500"
-                    >
+                    <text key={i} x={x} y={y} textAnchor="middle" style={{ fontSize: '11px', fontWeight: '700', fill: '#666' }}>
                         {d.name.length > 15 ? d.name.substring(0, 12) + "..." : d.name}
                     </text>
                 );
@@ -116,38 +99,8 @@ export default function SCLSConnectSurvey() {
         }
     });
 
-    const nextStep = () => setStep(s => s + 1);
-    const prevStep = () => setStep(s => s - 1);
-
-    const updateForm = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const updateScore = (tool, score) => {
-        setFormData(prev => ({
-            ...prev,
-            ask_scores: { ...prev.ask_scores, [tool]: score }
-        }));
-    };
-
-    const handleSubmit = async () => {
-        setLoading(true);
-        setStep(5);
-        try {
-            const resp = await submitSurvey(formData);
-            setResult(resp.data);
-            setStep(6);
-        } catch (err) {
-            setError(err.message);
-            setStep(4);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const selectedPos = useMemo(() => POSITIONS.find(p => p.id === formData.target_position), [formData.target_position]);
 
-    // Mock benchmarks for visual chart
     const radarData = useMemo(() => {
         if (!selectedPos || !result) return [];
         return [
@@ -155,407 +108,262 @@ export default function SCLSConnectSurvey() {
             { name: selectedPos.tools[1], user: formData.ask_scores[selectedPos.tools[1]] || 1, target: 4 },
             { name: selectedPos.tools[2], user: formData.ask_scores[selectedPos.tools[2]] || 1, target: 4 },
             { name: "Technical English", user: formData.ask_scores["Technical English"] || 1, target: 4 },
-            { name: "Problem Solving", user: 3, target: 5 }, // Inferred from situational
+            { name: "Problem Solving", user: 3, target: 5 },
         ];
     }, [selectedPos, result, formData.ask_scores]);
 
+    const updateForm = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+    const updateScore = (tool, score) => setFormData(prev => ({ ...prev, ask_scores: { ...prev.ask_scores, [tool]: score } }));
+
+    const handleSubmit = async () => {
+        setLoading(true); setStep(5);
+        try {
+            const resp = await submitSurvey(formData);
+            setResult(resp.data); setStep(6);
+        } catch (err) {
+            setError(err.message); setStep(4);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] font-inter">
-            {/* Navbar Branding */}
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E5E5E7] px-8 py-5 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <Link href="/" className="text-2xl font-black tracking-tighter text-hust-maroon">SCLS CONNECT</Link>
-                    <div className="w-[1px] h-6 bg-gray-300"></div>
-                    <span className="text-xl font-bold text-scls-green">C Factory</span>
+        <div className="scls-container" style={{ minHeight: '100vh', background: '#F5F5F7' }}>
+            {/* CSS Hack to hide RootLayout Nav */}
+            <style jsx global>{`
+        nav.navbar { display: none !important; }
+        body { background: #F5F5F7 !important; }
+      `}</style>
+
+            {/* Custom Survey Nav */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', padding: '1rem 0', borderBottom: '1px solid #E5E5E7' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#8B1D1D', letterSpacing: '-1px' }}>SCLS CONNECT</span>
+                    <div style={{ width: '1px', height: '20px', background: '#ccc' }}></div>
+                    <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#005A31' }}>C Factory</span>
                 </div>
-                <div className="hidden sm:flex items-center gap-3">
-                    <div className="px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-500 uppercase tracking-widest">
-                        HUST 29.03.2026
+                <div style={{ fontSize: '0.9rem', color: '#86868B', fontWeight: '600' }}>29.03.2026 • ĐHBK Hà Nội</div>
+            </div>
+
+            {/* Step 0: Hero */}
+            {step === 0 && (
+                <div className="scls-hero animate-in">
+                    <div className="scls-badge">FNX Talent Lab Auditing</div>
+                    <h1 className="scls-title">Audit năng lực.<br />Phát triển sự nghiệp.</h1>
+                    <p className="subheadline" style={{ maxWidth: '600px', margin: '0 auto 3rem' }}>
+                        Đối chiếu năng lực thực thực chiến của sinh viên Bách Khoa với tiêu chuẩn kỹ sư toàn cầu.
+                    </p>
+                    <button onClick={() => setStep(1)} className="btn-hust">Bắt đầu Audit ngay</button>
+
+                    <div style={{ marginTop: '5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                        <div className="apple-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>⚡</div>
+                            <div style={{ fontWeight: '700' }}>Real-time Insight</div>
+                        </div>
+                        <div className="apple-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📍</div>
+                            <div style={{ fontWeight: '700' }}>HUST Optimized</div>
+                        </div>
+                        <div className="apple-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📄</div>
+                            <div style={{ fontWeight: '700' }}>Career Roadmap</div>
+                        </div>
                     </div>
                 </div>
-            </nav>
+            )}
 
-            <main className="max-w-4xl mx-auto px-6 py-12">
-                {/* Step 0: Hero */}
-                {step === 0 && (
-                    <div className="text-center space-y-12 py-16 animate-in fade-in slide-in-from-bottom-5 duration-700">
-                        <div className="inline-block px-4 py-1.5 bg-scls-green/10 text-scls-green rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-                            Phòng Lab Năng lực FNX
+            {/* Step 1: Info */}
+            {step === 1 && (
+                <div className="animate-in" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <div className="step-indicator"><div className="step-indicator-fill" style={{ width: '25%' }}></div></div>
+                    <h2 className="headline" style={{ marginBottom: '2rem' }}>Bạn là ai?</h2>
+                    <div className="apple-card">
+                        <div className="form-group" style={{ marginBottom: '2rem' }}>
+                            <label className="caption">Họ và tên</label>
+                            <input type="text" className="hust-input" placeholder="Nguyễn Văn A" value={formData.name} onChange={e => updateForm("name", e.target.value)} />
                         </div>
-                        <h1 className="text-6xl md:text-7xl font-black tracking-tight leading-none text-hust-maroon">
-                            Audit năng lực.<br />Phát triển sự nghiệp.
-                        </h1>
-                        <p className="text-xl md:text-2xl text-apple-secondary max-w-2xl mx-auto leading-relaxed">
-                            Dành riêng cho sinh viên Bách Khoa: Đối chiếu năng lực thực chiến với tiêu chuẩn từ Masan, Nestlé, BASF...
-                        </p>
-                        <div className="pt-6">
-                            <button
-                                onClick={nextStep}
-                                className="px-12 py-5 bg-hust-maroon text-white rounded-full text-xl font-bold hover:scale-105 transition-all shadow-2xl shadow-hust-maroon/20 active:scale-95"
-                            >
-                                Bắt đầu Audit ngay
-                            </button>
+                        <div className="form-group" style={{ marginBottom: '2rem' }}>
+                            <label className="caption">Email nhận PDF</label>
+                            <input type="email" className="hust-input" placeholder="email@student.hust.edu.vn" value={formData.email} onChange={e => updateForm("email", e.target.value)} />
                         </div>
-                        <div className="pt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="p-6 bg-white rounded-apple border border-gray-100">
-                                <div className="text-2xl mb-2">⚡</div>
-                                <div className="font-bold">Real-time Analysis</div>
-                                <div className="text-sm text-gray-500">Kết quả và Gaps trích xuất sau 15 giây.</div>
-                            </div>
-                            <div className="p-6 bg-white rounded-apple border border-gray-100">
-                                <div className="text-2xl mb-2">📍</div>
-                                <div className="font-bold">HUST Optimized</div>
-                                <div className="text-sm text-gray-500">Matrix thiết kế riêng cho sinh viên kỹ thuật.</div>
-                            </div>
-                            <div className="p-6 bg-white rounded-apple border border-gray-100">
-                                <div className="text-2xl mb-2">📑</div>
-                                <div className="font-bold">PDF Career Path</div>
-                                <div className="text-sm text-gray-500">Lộ trình đột phá gửi trực tiếp về Email.</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 1: Identity */}
-                {step === 1 && (
-                    <div className="max-w-xl mx-auto space-y-10 animate-in fade-in duration-500">
-                        <div className="space-y-3">
-                            <div className="flex gap-1 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full w-1/4 bg-hust-maroon"></div>
-                            </div>
-                            <h2 className="text-4xl font-black tracking-tighter pt-4">Chúng tôi cần biết bạn là ai</h2>
-                        </div>
-                        <div className="bg-white p-10 rounded-apple shadow-xl shadow-gray-200/50 space-y-8 border border-gray-100">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Họ và tên</label>
-                                <input
-                                    type="text"
-                                    placeholder="Nguyễn Văn A"
-                                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-hust-maroon focus:ring-1 focus:ring-hust-maroon outline-none transition-all text-lg font-medium"
-                                    value={formData.name}
-                                    onChange={(e) => updateForm("name", e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Email nhận báo cáo</label>
-                                <input
-                                    type="email"
-                                    placeholder="email@student.hust.edu.vn"
-                                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-hust-maroon focus:ring-1 focus:ring-hust-maroon outline-none transition-all text-lg font-medium"
-                                    value={formData.email}
-                                    onChange={(e) => updateForm("email", e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Chuyên ngành</label>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {MAJORS.map(m => (
-                                        <button
-                                            key={m}
-                                            onClick={() => updateForm("major", m)}
-                                            className={`px-5 py-4 rounded-2xl border text-left text-base transition-all ${formData.major === m ? 'border-hust-maroon bg-hust-maroon/5 ring-1 ring-hust-maroon font-bold text-hust-maroon' : 'border-gray-200 hover:border-gray-400'}`}
-                                        >
-                                            {m}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="pt-4">
-                                <button
-                                    disabled={!formData.name || !formData.email || !formData.major}
-                                    onClick={nextStep}
-                                    className="w-full py-5 bg-apple-dark text-white rounded-2xl font-black text-lg hover:opacity-90 disabled:opacity-30 transition-all shadow-xl active:scale-[0.98]"
-                                >
-                                    Tiếp theo
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 2: Mapping */}
-                {step === 2 && (
-                    <div className="max-w-xl mx-auto space-y-10 animate-in fade-in duration-500">
-                        <div className="space-y-3">
-                            <div className="flex gap-1 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full w-2/4 bg-hust-maroon"></div>
-                            </div>
-                            <h2 className="text-4xl font-black tracking-tighter pt-4">Vị trí mục tiêu của bạn?</h2>
-                            <p className="text-gray-500 font-medium">Hệ thống sẽ đối chiếu năng lực chuẩn của vị trí này.</p>
-                        </div>
-                        <div className="grid grid-cols-1 gap-4">
-                            {POSITIONS.map(p => (
-                                <button
-                                    key={p.id}
-                                    onClick={() => updateForm("target_position", p.id)}
-                                    className={`p-6 rounded-apple border-2 transition-all group ${formData.target_position === p.id ? 'border-scls-green bg-scls-green/5' : 'border-white bg-white hover:border-gray-300 shadow-sm'}`}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-xl font-bold">{p.name}</div>
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.target_position === p.id ? 'bg-scls-green border-scls-green' : 'border-gray-200'}`}>
-                                            {formData.target_position === p.id && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                        <div className="flex gap-4 pt-6">
-                            <button onClick={prevStep} className="flex-1 py-5 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50">Quay lại</button>
-                            <button
-                                disabled={!formData.target_position}
-                                onClick={nextStep}
-                                className="flex-[2] py-5 bg-apple-dark text-white rounded-2xl font-black text-lg hover:opacity-90 disabled:opacity-30 transition-all shadow-xl"
-                            >
-                                Tiếp tục
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 3: ASK Assessment */}
-                {step === 3 && (
-                    <div className="max-w-2xl mx-auto space-y-10 animate-in fade-in duration-500">
-                        <div className="space-y-3">
-                            <div className="flex gap-1 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full w-3/4 bg-hust-maroon"></div>
-                            </div>
-                            <h2 className="text-4xl font-black tracking-tighter pt-4">Tự đánh giá kỹ năng</h2>
-                            <p className="text-gray-500 font-medium">Trung thực là bước đầu để phát triển (1: Mới biết - 5: Chuyên gia).</p>
-                        </div>
-
-                        <div className="bg-white p-8 rounded-apple shadow-lg border border-gray-100 space-y-12">
-                            {[...selectedPos?.tools, "Technical English"].map(tool => (
-                                <div key={tool} className="space-y-6">
-                                    <div className="flex justify-between items-end">
-                                        <label className="text-xl font-extrabold">{tool}</label>
-                                        <span className="text-scls-green font-black text-2xl">{formData.ask_scores[tool] || "—"}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center bg-gray-50 p-3 rounded-full border border-gray-100">
-                                        {[1, 2, 3, 4, 5].map(num => (
-                                            <button
-                                                key={num}
-                                                onClick={() => updateScore(tool, num)}
-                                                className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${formData.ask_scores[tool] === num ? 'bg-apple-dark text-white scale-110 shadow-lg' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200'}`}
-                                            >
-                                                {num}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="flex gap-4 pt-4">
-                            <button onClick={prevStep} className="flex-1 py-5 bg-white border border-gray-200 rounded-2xl font-bold hover:bg-gray-50">Quay lại</button>
-                            <button
-                                disabled={Object.keys(formData.ask_scores).length < (selectedPos?.tools.length + 1)}
-                                onClick={nextStep}
-                                className="flex-[2] py-5 bg-apple-dark text-white rounded-2xl font-black text-lg hover:opacity-90 disabled:opacity-30 transition-all shadow-xl"
-                            >
-                                Bước cuối cùng
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 4: Situational */}
-                {step === 4 && (
-                    <div className="max-w-xl mx-auto space-y-10 animate-in fade-in duration-500">
-                        <div className="space-y-3">
-                            <div className="flex gap-1 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full w-full bg-hust-maroon"></div>
-                            </div>
-                            <h2 className="text-4xl font-black tracking-tighter pt-4">Tư duy thực chiến</h2>
-                            <p className="text-gray-500 font-medium">FNX Talent Lab đánh giá cao phương pháp luận của bạn.</p>
-                        </div>
-
-                        <div className="space-y-8">
-                            <div className="bg-white p-8 rounded-apple shadow-sm border border-gray-100 space-y-4">
-                                <div className="inline-block px-3 py-1 bg-hust-maroon/10 text-hust-maroon rounded-lg text-xs font-bold uppercase tracking-wider">Tình huống 1</div>
-                                <label className="font-extrabold text-xl block">Phát hiện sai số trong dây chuyền sản xuất?</label>
-                                <textarea
-                                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 min-h-[140px] focus:border-hust-maroon outline-none transition-all placeholder:italic"
-                                    placeholder="Mô tả các bước xử lý của bạn..."
-                                    value={formData.situational.scenario_1}
-                                    onChange={(e) => updateForm("situational", { ...formData.situational, scenario_1: e.target.value })}
-                                />
-                            </div>
-                            <div className="bg-white p-8 rounded-apple shadow-sm border border-gray-100 space-y-4">
-                                <div className="inline-block px-3 py-1 bg-scls-green/10 text-scls-green rounded-lg text-xs font-bold uppercase tracking-wider">Tình huống 2</div>
-                                <label className="font-extrabold text-xl block">Thuyết phục sếp về cải tiến kỹ thuật?</label>
-                                <textarea
-                                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 min-h-[140px] focus:border-hust-maroon outline-none transition-all placeholder:italic"
-                                    placeholder="Mô tả chiến lược thuyết phục của bạn..."
-                                    value={formData.situational.scenario_2}
-                                    onChange={(e) => updateForm("situational", { ...formData.situational, scenario_2: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 pt-6">
-                            <button onClick={prevStep} className="flex-1 py-5 bg-white border border-gray-200 rounded-2xl font-bold">Quay lại</button>
-                            <button
-                                disabled={!formData.situational.scenario_1 || !formData.situational.scenario_2}
-                                onClick={handleSubmit}
-                                className="flex-[2] py-5 bg-hust-maroon text-white rounded-2xl font-black text-lg hover:opacity-90 disabled:opacity-30 transition-all shadow-2xl shadow-hust-maroon/20"
-                            >
-                                Hoàn tất & Xem báo cáo
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 5: Loading */}
-                {step === 5 && (
-                    <div className="text-center py-24 space-y-12 animate-in fade-in zoom-in duration-1000">
-                        <div className="relative w-32 h-32 mx-auto">
-                            <div className="absolute inset-0 border-4 border-hust-maroon/20 rounded-full"></div>
-                            <div className="absolute inset-0 border-4 border-hust-maroon border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                        <div className="space-y-4">
-                            <h2 className="text-3xl font-black tracking-tight">FNX Agent đang phân tích...</h2>
-                            <div className="text-gray-400 font-medium space-y-2 max-w-sm mx-auto">
-                                <div className="overflow-hidden h-2 bg-gray-100 rounded-full">
-                                    <div className="h-full bg-scls-green animate-[progress_3s_ease-in-out_infinite]"></div>
-                                </div>
-                                <p className="text-sm">Xây dựng Career Path dành riêng cho <strong>{formData.name}</strong></p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 6: Result (High Fidelity) */}
-                {step === 6 && result && (
-                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-                        {/* Header Result */}
-                        <div className="text-center space-y-6">
-                            <div className="inline-flex items-center gap-2 px-5 py-2 bg-scls-green text-white rounded-full font-bold text-sm">
-                                <span className="animate-pulse">●</span> Audit Successfully Completed
-                            </div>
-                            <h2 className="text-5xl font-black tracking-tighter">Báo cáo Năng lực thực chiến</h2>
-                            <div className="flex justify-center items-center gap-12 py-6">
-                                <div className="text-center">
-                                    <div className="text-8xl font-black text-scls-green tracking-tighter leading-none">{result.match_score}<span className="text-4xl">%</span></div>
-                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-4">Match Index</div>
-                                </div>
-                                <div className="h-20 w-[1px] bg-gray-200"></div>
-                                <div className="text-left max-w-xs">
-                                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Status</div>
-                                    <div className="text-xl font-extrabold leading-tight">
-                                        {result.match_score > 80 ? "Tiềm năng xuất sắc" : result.match_score > 60 ? "Sẵn sàng nhập cuộc" : "Cần bổ sung kỹ năng"}
-                                    </div>
-                                    <div className="text-xs text-gray-400 mt-2 font-medium">Dựa trên tiêu chuẩn của {selectedPos?.name}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Visual Analytics */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Radar Chart Card */}
-                            <div className="bg-white p-10 rounded-apple shadow-xl shadow-gray-200/50 border border-gray-100 text-center">
-                                <h3 className="text-xl font-black text-left mb-8 flex items-center gap-2">
-                                    <span className="w-2 h-6 bg-hust-maroon rounded-full inline-block"></span>
-                                    Biểu đồ Năng lực
-                                </h3>
-                                <RadarChart data={radarData} />
-                                <div className="flex justify-center gap-6 mt-8">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 bg-hust-maroon rounded-full"></div>
-                                        <span className="text-xs font-bold text-gray-500 uppercase">Hồ sơ của bạn</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 bg-scls-green opacity-30 rounded-full"></div>
-                                        <span className="text-xs font-bold text-gray-500 uppercase">Benchmark Ngành</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Skill Bars Card */}
-                            <div className="bg-white p-10 rounded-apple shadow-xl shadow-gray-200/50 border border-gray-100">
-                                <h3 className="text-xl font-black mb-8 flex items-center gap-2">
-                                    <span className="w-2 h-6 bg-scls-green rounded-full inline-block"></span>
-                                    Khoảng cách kỹ năng (GAP)
-                                </h3>
-                                <div className="space-y-8">
-                                    {result.gaps.slice(0, 4).map((g, i) => (
-                                        <div key={i} className="space-y-2">
-                                            <div className="flex justify-between font-bold text-sm uppercase tracking-wide">
-                                                <span>{g.skill}</span>
-                                                <span className={g.gap_value < 0 ? 'text-hust-maroon' : 'text-scls-green'}>
-                                                    {g.gap_value > 0 ? `+${g.gap_value}` : g.gap_value}
-                                                </span>
-                                            </div>
-                                            <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex">
-                                                <div
-                                                    className={`h-full transition-all duration-1000 delay-500 ${g.gap_value < 0 ? 'bg-hust-maroon' : 'bg-scls-green'}`}
-                                                    style={{ width: `${(Math.max(1, 4 + g.gap_value) / 5) * 100}%` }}
-                                                ></div>
-                                            </div>
-                                            <p className="text-xs text-gray-400 leading-relaxed font-medium">{g.explanation}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Career Roadmap Card */}
-                        <div className="bg-apple-dark text-white p-12 rounded-[32px] shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-scls-green/40 blur-[100px] -mr-32 -mt-32"></div>
-                            <div className="relative z-10 space-y-8">
-                                <h3 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                                    Lộ trình Đột phá (Career Roadmap)
-                                    <span className="text-xs px-3 py-1 bg-white/10 rounded-full font-bold uppercase tracking-widest">FNX Optimized</span>
-                                </h3>
-                                <div className="text-xl leading-relaxed text-gray-300 italic font-medium border-l-4 border-scls-green pl-8">
-                                    "{result.career_path}"
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
-                                    {result.recommendations.map((rec, i) => (
-                                        <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-white/10 transition-all">
-                                            <div className="text-scls-green font-black mb-2 uppercase tracking-widest text-xs">Phát triển #{i + 1}</div>
-                                            <div className="font-bold text-lg mb-2">{rec.action}</div>
-                                            <div className="text-sm text-gray-400">{rec.reason}</div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="pt-10 flex flex-col md:flex-row gap-6">
-                                    <button className="flex-1 py-5 bg-white text-apple-dark rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl">
-                                        📥 Download PDF Report
+                        <div className="form-group" style={{ marginBottom: '2rem' }}>
+                            <label className="caption">Chuyên ngành</label>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                                {MAJORS.map(m => (
+                                    <button key={m} onClick={() => updateForm("major", m)} style={{ padding: '1rem', borderRadius: '14px', border: formData.major === m ? '2px solid #8B1D1D' : '1px solid #E5E5E7', background: formData.major === m ? '#FDF2F2' : 'white', fontWeight: formData.major === m ? '700' : '400', textAlign: 'left', cursor: 'pointer' }}>
+                                        {m}
                                     </button>
-                                    <Link href="/" className="flex-1 py-5 bg-white/10 text-white border border-white/20 rounded-2xl font-bold flex items-center justify-center hover:bg-white/20 transition-all">
-                                        Quay lại Trang chủ
-                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                        <button disabled={!formData.name || !formData.email || !formData.major} onClick={() => setStep(2)} className="btn-hust" style={{ width: '100%' }}>Tiếp theo</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 2: Position */}
+            {step === 2 && (
+                <div className="animate-in" style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <div className="step-indicator"><div className="step-indicator-fill" style={{ width: '50%' }}></div></div>
+                    <h2 className="headline" style={{ marginBottom: '1rem' }}>Vị trí mục tiêu?</h2>
+                    <p style={{ color: '#86868B', marginBottom: '2rem' }}>Chọn hướng đi bạn muốn audit năng lực.</p>
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                        {POSITIONS.map(p => (
+                            <button key={p.id} onClick={() => updateForm("target_position", p.id)} style={{ padding: '1.5rem', borderRadius: '20px', border: formData.target_position === p.id ? '2px solid #005A31' : '1px solid white', background: formData.target_position === p.id ? '#F0F9F4' : 'white', fontWeight: formData.target_position === p.id ? '700' : '500', textAlign: 'left', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                                {p.name}
+                            </button>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '2.5rem' }}>
+                        <button onClick={() => setStep(1)} style={{ flex: 1, padding: '1.25rem', borderRadius: '18px', border: '1px solid #E5E5E7', background: 'white', fontWeight: '700' }}>Quay lại</button>
+                        <button disabled={!formData.target_position} onClick={() => setStep(3)} className="btn-hust" style={{ flex: 2 }}>Tiếp tục</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 3: ASK */}
+            {step === 3 && (
+                <div className="animate-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                    <div className="step-indicator"><div className="step-indicator-fill" style={{ width: '75%' }}></div></div>
+                    <h2 className="headline" style={{ marginBottom: '1rem' }}>Đánh giá Kỹ năng</h2>
+                    <p style={{ color: '#86868B', marginBottom: '2.5rem' }}>Dùng thanh điểm 1 (Biết) đến 5 (Chuyên gia).</p>
+                    <div className="apple-card" style={{ padding: '2rem' }}>
+                        {[...selectedPos.tools, "Technical English"].map(tool => (
+                            <div key={tool} style={{ marginBottom: '2.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                    <span style={{ fontSize: '1.15rem', fontWeight: '700' }}>{tool}</span>
+                                    <span style={{ color: '#005A31', fontWeight: '900', fontSize: '1.5rem' }}>{formData.ask_scores[tool] || '—'}</span>
                                 </div>
-                                <p className="text-center text-xs text-white/40 font-bold uppercase tracking-widest">
-                                    Bản quyền báo cáo thuộc về FNX Talent Lab & SCLS Connector
-                                </p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8F8F9', padding: '8px', borderRadius: '100px' }}>
+                                    {[1, 2, 3, 4, 5].map(num => (
+                                        <div key={num} onClick={() => updateScore(tool, num)} className={`score-dot ${formData.ask_scores[tool] === num ? 'active' : ''}`}>
+                                            {num}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '2rem' }}>
+                            <button onClick={() => setStep(2)} style={{ flex: 1, padding: '1.25rem', borderRadius: '18px', border: '1px solid #E5E5E7', background: 'white', fontWeight: '700' }}>Quay lại</button>
+                            <button disabled={Object.keys(formData.ask_scores).length < (selectedPos.tools.length + 1)} onClick={() => setStep(4)} className="btn-hust" style={{ flex: 2 }}>Tiếp tục</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 4: Situational */}
+            {step === 4 && (
+                <div className="animate-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                    <div className="step-indicator"><div className="step-indicator-fill" style={{ width: '100%' }}></div></div>
+                    <h2 className="headline" style={{ marginBottom: '1rem' }}>Tư duy Xử lý</h2>
+                    <p style={{ color: '#86868B', marginBottom: '2.5rem' }}>Phân tích cách bạn giải quyết vấn đề thực tế.</p>
+
+                    <div className="apple-card" style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem', fontWeight: '800' }}>Tình huống 1: Sai lệch quy trình</h4>
+                        <textarea className="hust-input" style={{ minHeight: '120px' }} placeholder="Bạn sẽ làm gì nếu thông số sản xuất bị lệch?" value={formData.situational.scenario_1} onChange={e => updateForm("situational", { ...formData.situational, scenario_1: e.target.value })} />
+                    </div>
+
+                    <div className="apple-card" style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem', fontWeight: '800' }}>Tình huống 2: Thuyết phục cải tiến</h4>
+                        <textarea className="hust-input" style={{ minHeight: '120px' }} placeholder="Cách bạn thuyết phục cấp trên về một giải pháp mới?" value={formData.situational.scenario_2} onChange={e => updateForm("situational", { ...formData.situational, scenario_2: e.target.value })} />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '2rem' }}>
+                        <button onClick={() => setStep(3)} style={{ flex: 1, padding: '1.25rem', borderRadius: '18px', border: '1px solid #E5E5E7', background: 'white', fontWeight: '700' }}>Quay lại</button>
+                        <button disabled={!formData.situational.scenario_1 || !formData.situational.scenario_2} onClick={handleSubmit} className="btn-hust" style={{ flex: 2 }}>Hoàn tất & Xem báo cáo</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 5: Loading */}
+            {step === 5 && (
+                <div className="animate-in" style={{ textAlign: 'center', padding: '10rem 0' }}>
+                    <div style={{ width: '80px', height: '80px', border: '6px solid #8B1D1D', borderTopColor: 'transparent', borderRadius: '50%', margin: '0 auto 3rem' }} className="animate-spin"></div>
+                    <h2 className="headline">Agent đang phân tích...</h2>
+                    <p style={{ color: '#86868B', marginTop: '1rem' }}>Đang xây dựng lộ trình cho <strong>{formData.name}</strong></p>
+                </div>
+            )}
+
+            {/* Step 6: Result */}
+            {step === 6 && result && (
+                <div className="animate-in">
+                    <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                        <div className="scls-badge">Audit Completed</div>
+                        <h1 className="headline" style={{ fontSize: '3.5rem', marginBottom: '2rem' }}>Báo cáo Năng lực thực chiến</h1>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4rem' }}>
+                            <div style={{ fontSize: '6rem', fontWeight: '900', color: '#005A31', letterSpacing: '-4px' }}>{result.match_score}%</div>
+                            <div style={{ textAlign: 'left', maxWidth: '300px' }}>
+                                <div style={{ fontWeight: '800', fontSize: '1.25rem', marginBottom: '8px' }}>
+                                    {result.match_score > 75 ? "Tiềm năng Xuất sắc" : "Sẵn sàng Nhập cuộc"}
+                                </div>
+                                <p style={{ color: '#86868B', fontSize: '0.9rem' }}>{result.summary}</p>
                             </div>
                         </div>
                     </div>
-                )}
 
-                {error && (
-                    <div className="mt-8 p-6 bg-red-50 text-hust-maroon rounded-2xl text-sm font-bold border border-red-100 animate-in shake duration-500">
-                        ⚠️ Lỗi hệ thống: {error}. Vui lòng thử lại hoặc báo cho nhân viên tại booth.
-                    </div>
-                )}
-            </main>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', marginBottom: '3rem' }}>
+                        <div className="apple-card" style={{ textAlign: 'center' }}>
+                            <h3 style={{ textAlign: 'left', marginBottom: '2rem', borderLeft: '4px solid #8B1D1D', paddingLeft: '15px' }}>Biểu đồ Năng lực</h3>
+                            <div className="radar-chart-container">
+                                <RadarChart data={radarData} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '0.7rem', fontWeight: '800', color: '#888' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: '#8B1D1D', borderRadius: '2px' }}></div>BẠN</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><div style={{ width: '10px', height: '10px', background: '#005A31', opacity: 0.2, borderRadius: '2px' }}></div>NGÀNH</div>
+                            </div>
+                        </div>
 
-            {/* Footer */}
-            <footer className="mt-24 border-t border-gray-100 py-16 px-8 bg-white">
-                <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div className="flex flex-col gap-2">
-                        <div className="text-2xl font-black text-hust-maroon">SCLS CONNECT 2026</div>
-                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Kiến tạo tương lai</div>
+                        <div className="apple-card">
+                            <h3 style={{ marginBottom: '2rem', borderLeft: '4px solid #005A31', paddingLeft: '15px' }}>Khoảng cách kỹ năng (GAP)</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                {result.gaps.slice(0, 4).map((g, i) => (
+                                    <div key={i}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '800', fontSize: '0.9rem', marginBottom: '8px' }}>
+                                            <span>{g.skill}</span>
+                                            <span style={{ color: g.gap_value < 0 ? '#8B1D1D' : '#005A31' }}>{g.gap_value > 0 ? `+${g.gap_value}` : g.gap_value}</span>
+                                        </div>
+                                        <div className="progress-container">
+                                            <div className={`progress-fill ${g.gap_value < 0 ? 'hust' : 'scls'}`} style={{ width: `${(Math.max(1, 4 + g.gap_value) / 5) * 100}%` }}></div>
+                                        </div>
+                                        <p style={{ fontSize: '0.75rem', color: '#86868B', marginTop: '6px' }}>{g.explanation}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div className="text-right text-sm text-gray-400 font-medium">
-                        © 2026 FNX Talent Factory. <br />
-                        Powered by Gemini 2.0 Flash & Korn Ferry Framework.
+
+                    <div className="career-roadmap-box">
+                        <div className="career-roadmap-content">
+                            <h2 style={{ color: 'white', fontSize: '2.5rem', marginBottom: '2rem' }}>Lộ trình Đột phá</h2>
+                            <div style={{ fontSize: '1.25rem', lineHeight: '1.6', color: '#ccc', borderLeft: '3px solid #005A31', paddingLeft: '2rem', marginBottom: '3rem', fontStyle: 'italic' }}>
+                                "{result.career_path}"
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                                {result.recommendations.map((rec, i) => (
+                                    <div key={i} style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <div style={{ fontSize: '0.7rem', color: '#005A31', fontWeight: '900', marginBottom: '8px' }}>RECO #{i + 1}</div>
+                                        <div style={{ fontWeight: '700', fontSize: '1.1rem', marginBottom: '8px' }}>{rec.action}</div>
+                                        <p style={{ fontSize: '0.85rem', color: '#888' }}>{rec.reason}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+                                <button className="btn-hust" style={{ background: 'white', color: 'black', width: '300px' }}>📥 Tải PDF Báo cáo</button>
+                                <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: '#666' }}>Báo cáo đã gửi về <strong>{formData.email}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+                        <Link href="/" style={{ fontWeight: '700', color: '#8B1D1D' }}>← Quay lại Trang chủ C Factory</Link>
                     </div>
                 </div>
-            </footer>
+            )}
+
+            <div className="scls-footer">
+                © 2026 FNX Talent Factory • SCLS CONNECT 2026<br />
+                Hệ thống Thẩm định Năng lực Thực chiến
+            </div>
         </div>
     );
 }

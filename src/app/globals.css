@@ -45,6 +45,12 @@
   --radius-full: 980px;
 
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+
+  /* HUST & SCLS Colors */
+  --hust-maroon: #8B1D1D;
+  --hust-gold: #F9B115;
+  --scls-green: #005A31;
+  --scls-emerald: #10B981;
 }
 
 /* ── Global Reset ── */
@@ -861,4 +867,191 @@ a:hover {
 
 .text-center {
   text-align: center;
+}
+/* ── SCLS CONNECT — Specific Components ── */
+
+.scls-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.scls-hero {
+  text-align: center;
+  padding: 8rem 0 4rem;
+}
+
+.scls-title {
+  font-size: clamp(3.5rem, 10vw, 5.5rem);
+  font-weight: 800;
+  color: var(--hust-maroon);
+  letter-spacing: -0.045em;
+  line-height: 0.9;
+  margin-bottom: 2rem;
+}
+
+.scls-badge {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: rgba(0, 90, 49, 0.1);
+  color: var(--scls-green);
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 2rem;
+}
+
+.apple-card {
+  background: white;
+  border-radius: 28px;
+  padding: 3rem;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 3rem;
+}
+
+.hust-input {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  font-size: 1.25rem;
+  transition: all 0.25s;
+}
+
+.hust-input:focus {
+  outline: none;
+  border-color: var(--hust-maroon);
+  box-shadow: 0 0 0 5px rgba(139, 29, 29, 0.15);
+}
+
+.btn-hust {
+  background: var(--hust-maroon);
+  color: white;
+  padding: 1.5rem 3rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  border-radius: 22px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 30px rgba(139, 29, 29, 0.3);
+}
+
+.btn-hust:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(139, 29, 29, 0.4);
+}
+
+.btn-hust:active {
+  transform: scale(0.98);
+}
+
+.btn-hust:disabled {
+  background: #E1E1E1;
+  color: #999;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.score-dot {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: white;
+}
+
+.score-dot:hover {
+  border-color: var(--scls-green);
+  color: var(--scls-green);
+}
+
+.score-dot.active {
+  background: var(--scls-green);
+  border-color: var(--scls-green);
+  color: white;
+  transform: scale(1.2);
+  box-shadow: 0 10px 20px rgba(0, 90, 49, 0.2);
+}
+
+.radar-chart-container {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 0;
+}
+
+.progress-container {
+  width: 100%;
+  height: 12px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+}
+
+.progress-fill.hust { background: var(--hust-maroon); }
+.progress-fill.scls { background: var(--scls-green); }
+
+.career-roadmap-box {
+  background: #000;
+  color: white;
+  padding: 4rem;
+  border-radius: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.career-roadmap-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0, 90, 49, 0.4) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.career-roadmap-content {
+  position: relative;
+  z-index: 1;
+}
+
+.step-indicator {
+  height: 4px;
+  background: var(--border-light);
+  border-radius: 2px;
+  display: flex;
+  gap: 4px;
+  margin: 1rem 0 2rem;
+}
+
+.step-indicator-fill {
+  height: 100%;
+  background: var(--hust-maroon);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.scls-footer {
+  text-align: center;
+  padding: 6rem 0;
+  color: #999;
+  font-size: 0.9rem;
+  border-top: 1px solid #eee;
 }
