@@ -16,26 +16,35 @@ export async function POST(req) {
         // Action 1: AI Analysis
         const aiResult = await analyzeSurvey(data);
 
-        // Action 2: Data Logging (Async / Fire and Forget)
-        // Field Mapping for SheetDB
+        // Action 2: Data Logging (Await for Vercel Serverless)
+        // Field Mapping for Vietnamese Headers in Google Sheet
         const logData = {
-            timestamp: new Date().toLocaleString("vi-VN"),
-            name,
-            email,
-            major,
-            target_position,
-            score: aiResult.match_score || 0,
-            main_gap: aiResult.gaps?.[0]?.explanation || "N/A"
+            "Mã ứng viên": `SCLS-${Date.now().toString().slice(-6)}`,
+            "Họ và tên": name,
+            "Email": email,
+            "Chuyên ngành": major,
+            "Lộ trình nghề nghiệp mong muốn": target_position,
+            "Cấp độ năng lực": `${aiResult.match_score || 0}%`,
+            "Ghi chú": aiResult.gaps?.[0]?.explanation || "N/A"
         };
 
         // Log to external API (SheetDB/Make)
-        // Note: We don't await this to keep the response fast for the user
-        const SHEETDB_API_URL = "https://sheetdb.io/api/v1/u95p221290299"; // Placeholder / Replace if needed
-        fetch(SHEETDB_API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: [logData] })
-        }).catch(err => console.error("External Logging Failed:", err));
+        // CRITICAL: We MUST await this on Vercel or the function will terminate before logging is done.
+        const SHEETDB_API_URL = process.env.SHEETDB_URL || "https://sheetdb.io/api/v1/u95p221290299";
+
+        try {
+            const logResponse = await fetch(SHEETDB_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: [logData] })
+            });
+            if (!logResponse.ok) {
+                const logErr = await logResponse.text();
+                console.error("SheetDB Logging Failed Response:", logErr);
+            }
+        } catch (err) {
+            console.error("External Logging Network Error:", err);
+        }
 
         return NextResponse.json({
             success: true,
