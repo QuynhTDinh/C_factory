@@ -30,7 +30,7 @@ export async function POST(req) {
 
         // Log to external API (SheetDB/Make)
         // CRITICAL: We MUST await this on Vercel or the function will terminate before logging is done.
-        const SHEETDB_API_URL = process.env.SHEETDB_URL || "https://sheetdb.io/api/v1/u95p221290299";
+        const SHEETDB_API_URL = process.env.SHEETDB_URL || "https://sheetdb.io/api/v1/bbjxmtir1riyg";
 
         try {
             const logResponse = await fetch(SHEETDB_API_URL, {
