@@ -12,6 +12,15 @@ Nhiệm vụ: Phân tích mức độ phù hợp giữa hồ sơ ứng viên và
 3. Đưa ra đề xuất cụ thể, hành động được
 4. KHÔNG bịa thông tin — chỉ phân tích dựa trên dữ liệu cung cấp
 
+## Logic đặc thù theo Chuyên ngành
+Khi phân tích, hãy áp dụng các quy tắc sau:
+- **Nếu chuyên ngành là "Quản lý tài nguyên & Môi trường"**:
+    - Ưu tiên kiểm tra năng lực **K1 (ISO 14001)**.
+    - Nếu là vị trí **Tư vấn thiết kế**, tập trung vào khả năng lập hồ sơ pháp lý và quy chuẩn Việt Nam (**QCVN**).
+- **Nếu chuyên ngành là "Hóa học"**:
+    - Tăng trọng số đánh giá cho **A2 (Trách nhiệm & Đạo đức)** vì sai sót trong ngành hóa chất có hậu quả lớn.
+    - Nếu là vị trí **Sales kỹ thuật**, tập trung vào năng lực giải thích **MSDS** (Bảng dữ liệu an toàn hóa chất).
+
 ## Output Format (JSON)
 Trả về JSON hợp lệ, KHÔNG có text thừa:
 

@@ -1,77 +1,59 @@
-# HUST SCLS Competency Matrix (Benchmarks)
+# HUST SCLS Competency Matrix (V2.2 - UPDATED)
 
 Bản đồ năng lực chuẩn cho các vị trí kỹ sư thuộc khối ngành Hóa, Thực phẩm, Sinh học, Môi trường.
-Thang điểm: 1 (Làm quen) -> 5 (Expert/Sáng tạo).
+Định mức Level (1-5) cho Fresher dựa trên tiêu chuẩn các tập đoàn: Masan, BASF, Pfizer, ERM, Veolia.
 
-## I. Các vị trí mục tiêu (Target Positions)
+## I. Ma trận năng lực cốt lõi (Core Matrix)
 
-### 1. Kỹ sư Vận hành (Operations Engineer)
-- **Mô tả**: Quản lý dây chuyền sản xuất, tối ưu hóa quy trình, đảm bảo an toàn.
-- **Kỹ năng trọng tâm**: SCADA/HMI, 5S/Kaizen, Troubleshooting, Safety Standards.
-- **Benchmark**:
-    - Công cụ kỹ thuật: 4/5
-    - Tư duy hệ thống: 4/5
-    - Xử lý tình huống: 4/5
-    - Tiếng Anh kỹ thuật: 3/5
-
-### 2. Kỹ sư QA/QC/R&D (Quality & Development Engineer)
-- **Mô tả**: Kiểm soát chất lượng, phân tích thí nghiệm, nghiên cứu sản phẩm mới.
-- **Kỹ năng trọng tâm**: HPLC/GC/MS, Spectrophotometry, ISO Standards, Analytical Thinking.
-- **Benchmark**:
-    - Công cụ kỹ thuật: 5/5
-    - Tư duy phân tích: 5/5
-    - Độ chính xác: 5/5
-    - Tiếng Anh kỹ thuật: 4/5
-
-### 3. Kỹ sư Thiết kế kỹ thuật (Technical Design Engineer)
-- **Mô tả**: Thiết kế bản vẽ, sơ đồ P&ID, tính toán mô phỏng hệ thống.
-- **Kỹ năng trọng tâm**: AutoCAD, SolidWorks, Simulation Tools, Fluid Dynamics.
-- **Benchmark**:
-    - Công cụ kỹ thuật: 5/5
-    - Tư duy không gian: 4/5
-    - Tiếng Anh kỹ thuật: 4/5
-
-### 4. Kỹ sư Tư vấn giải pháp (Technical Consultant)
-- **Mô tả**: Tư vấn kỹ thuật cho khách hàng, xây dựng phương án tối ưu.
-- **Kỹ năng trọng tâm**: Problem Solving, Presentation, Cost-Benefit Analysis.
-- **Benchmark**:
-    - Giải quyết vấn đề: 5/5
-    - Giao tiếp kỹ thuật: 5/5
-    - Tư duy thương mại: 3/5
-
-### 5. Kỹ sư Sales Kỹ thuật (Technical Sales Engineer)
-- **Mô tả**: Kết hợp kiến thức kỹ thuật để cung cấp thiết bị/Giải pháp.
-- **Kỹ năng trọng tâm**: Product Knowledge, Networking, Negotiation.
-- **Benchmark**:
-    - Kiến thức sản phẩm: 4/5
-    - Giao tiếp: 5/5
-    - Tiếng Anh: 4/5
-
-### 6. Kỹ sư Bảo trì (Maintenance Engineer)
-- **Mô tả**: Sửa chữa, bảo dưỡng máy móc, thiết bị kỹ thuật.
-- **Kỹ năng trọng tâm**: Mechanical/Electrical Skills, Preventive Maintenance, CMMS.
-- **Benchmark**:
-    - Kỹ năng thực hành: 5/5
-    - Troubleshooting: 5/5
+| Nhóm | Năng lực (Competency) | Vận hành sản xuất | Bảo trì bảo dưỡng | QA/QC/R&D | Thiết kế kỹ thuật | Tư vấn thiết kế | Sales kỹ thuật |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **K** | Tiêu chuẩn & An toàn (K1) | L3 | L3 | L4 | L4 | L3 | L2 |
+| **K** | Chuyên môn ngành (K2) | L3 | L4 | L4 | L4 | L4 | L3 |
+| **S** | Vận hành công cụ (S1) | L3 | L4 | L4 | L5 | L3 | L2 |
+| **S** | Giải quyết vấn đề (S2) | L3 | L4 | L3 | L4 | L3 | L3 |
+| **S** | Ngoại ngữ (Technical) (S3) | L1 | L2 | L3 | L3 | L3 | L3 |
+| **A** | Tư duy Quy trình (A1) | L4 | L3 | L4 | L5 | L4 | L2 |
+| **A** | Trách nhiệm & Đạo đức (A2) | L3 | L4 | L5 | L4 | L4 | L3 |
 
 ---
 
-## II. Bộ câu hỏi ASK (Assessment Score Key)
+## II. Chỉ số đặc thù theo chuyên ngành (Major-Specific Indicators)
 
-### 1. Nhóm Công cụ (Tools)
-- **Mức 1**: Chưa từng sử dụng/Chưa nghe tới.
-- **Mức 2**: Biết lý thuyết, chưa thực hành thực tế.
-- **Mức 3**: Sử dụng cơ bản trong các bài thí nghiệm/đồ án.
-- **Mức 4**: Sử dụng thành thạo, có thể hướng dẫn người khác.
-- **Mức 5**: Chuyên gia, có thể khắc phục lỗi phức tạp/tối ưu công cụ.
+### 1. Chuyên ngành Hóa học (Pure/Applied Chemistry)
+**Trọng tâm**: Độ chính xác thí nghiệm và Bản chất vật liệu (Benchmark: BASF, Dow).
+- **K1 (Tiêu chuẩn)**: Tập trung vào **ISO 17025** (Phòng Lab) và **Lab Safety**.
+- **S1 (Công cụ)**: Thành thạo các thiết bị phân tích sâu: **NMR, FTIR, SEM**, bên cạnh HPLC/GC.
+- **Vị trí ưu thế**: R&D và Thiết kế kỹ thuật (Quy trình tổng hợp hóa học).
+- **Lưu ý Logic**: Tăng trọng số cho **A2 (Đạo đức)**. Sales kỹ thuật cần hiểu sâu **MSDS**.
 
-### 2. Nhóm Tiếng Anh Kỹ thuật
-- **Mức 1**: Chỉ đọc được các từ đơn lẻ.
-- **Mức 2**: Đọc hiểu tài liệu cơ bản (User Manual).
-- **Mức 3**: Đọc hiểu spec phức tạp và viết báo cáo kỹ thuật đơn giản.
-- **Mức 4**: Giao tiếp tốt với chuyên gia nước ngoài về kỹ thuật.
-- **Mức 5**: Làm việc trực tiếp trong môi trường quốc tế, hiểu các tiêu chuẩn toàn cầu.
+### 2. Quản lý tài nguyên & Môi trường
+**Trọng tâm**: Tính tuân thủ pháp luật và Bền vững (Benchmark: ERM, Veolia, Greentech).
+- **K1 (Tiêu chuẩn)**: Bắt buộc **ISO 14001** (Quản lý môi trường) và **ISO 45001** (An toàn sức khỏe).
+- **K2 (Chuyên môn)**: EIA (Đánh giá tác động MT), Quản lý phát thải, xử lý nước/rác thải.
+- **S1 (Công cụ)**: Phần mềm **GIS**, mô phỏng phát thải, thiết bị quan trắc hiện trường.
+- **Vị trí ưu thế**: Tư vấn thiết kế (Hồ sơ pháp lý, QCVN) và Vận hành (Trạm xử lý).
+- **Lưu ý Logic**: Ưu tiên kiểm tra **K1 (ISO 14001)**.
 
-### 3. Nhóm Tư duy (Situational)
-- **Cấp độ 4**: Biết phân tích nguyên nhân gốc rễ (Root Cause Analysis).
-- **Cấp độ 5**: Đưa ra giải pháp sáng tạo, tối ưu về mặt kinh tế và an toàn.
+---
+
+## III. Định nghĩa Level (ASK Framework)
+
+### 1. Nhóm Công cụ (Tools - S1)
+- **L1**: Chưa từng sử dụng/Chưa nghe tới.
+- **L2**: Biết lý thuyết, chưa thực hành thực tế.
+- **L3**: Sử dụng cơ bản trong các bài thí nghiệm/đồ án.
+- **L4**: Sử dụng thành thạo, có thể hướng dẫn người khác.
+- **L5**: Chuyên gia, có thể khắc phục lỗi phức tạp/tối ưu công cụ.
+
+### 2. Nhóm Tiếng Anh Kỹ thuật (S3)
+- **L1**: Chỉ đọc được các từ đơn lẻ.
+- **L2**: Đọc hiểu tài liệu cơ bản (User Manual).
+- **L3**: Đọc hiểu spec phức tạp và viết báo cáo kỹ thuật đơn giản.
+- **L4**: Giao tiếp tốt với chuyên gia nước ngoài về kỹ thuật.
+- **L5**: Làm việc trực tiếp trong môi trường quốc tế, hiểu các tiêu chuẩn toàn cầu.
+
+### 3. Nhóm Nhân cách & Tư duy (A1, A2, S2)
+- **L1-2**: Tuân thủ hướng dẫn có sẵn.
+- **L3**: Thực hiện độc lập trong môi trường ổn định.
+- **L4**: Biết phân tích nguyên nhân gốc rễ (Root Cause Analysis).
+- **L5**: Đưa ra giải pháp sáng tạo, tối ưu về kinh tế và an toàn (Expert Level).

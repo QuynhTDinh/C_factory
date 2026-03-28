@@ -9,6 +9,8 @@ const MAJORS = [
     "Công nghệ Thực phẩm",
     "Kỹ thuật Sinh học",
     "Kỹ thuật Môi trường",
+    "Hóa học (Pure/Applied Chemistry)",
+    "Quản lý tài nguyên & Môi trường",
 ];
 
 const POSITIONS = [
