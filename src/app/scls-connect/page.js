@@ -14,12 +14,74 @@ const MAJORS = [
 ];
 
 const POSITIONS = [
-    { id: "operations", name: "Kỹ sư Vận hành (Operations)", tools: ["SCADA/HMI", "5S/Kaizen", "Troubleshooting", "Safety Standards"] },
-    { id: "rd", name: "Kỹ sư QA/QC/R&D", tools: ["HPLC/GC/MS", "Spectrophotometry", "Analytical Method", "ISO Standards"] },
-    { id: "design", name: "Kỹ sư Thiết kế kỹ thuật", tools: ["AutoCAD", "SolidWorks", "Sơ đồ P&ID", "Simulation Tools"] },
-    { id: "consultant", name: "Kỹ sư Tư vấn giải pháp", tools: ["Problem Solving", "Presentation", "Cost-Benefit Analysis"] },
-    { id: "sales", name: "Kỹ sư Sales Kỹ thuật", tools: ["Product Knowledge", "Networking", "Negotiation"] },
-    { id: "maintenance", name: "Kỹ sư Bảo trì", tools: ["Mechanical/Electrical", "Preventive Maintenance", "Troubleshooting"] },
+    {
+        id: "operations",
+        name: "Kỹ sư Vận hành (Operations)",
+        tools: [
+            { name: "SCADA/HMI", desc: "Hệ thống giám sát và điều khiển dữ liệu nhà máy." },
+            { name: "5S/Kaizen", desc: "Phương pháp tối ưu hóa nơi làm việc và cải tiến liên tục." },
+            { name: "Troubleshooting", desc: "Kỹ năng chẩn đoán và khắc phục sự cố hệ thống." },
+            { name: "Safety Standards", desc: "Các quy chuẩn an toàn lao động và vận hành máy móc." },
+            { name: "Process Control", desc: "Kiểm soát các thông số vận hành (nhiệt độ, áp suất, lưu lượng)." }
+        ]
+    },
+    {
+        id: "rd",
+        name: "Kỹ sư QA/QC/R&D",
+        tools: [
+            { name: "HPLC/GC/MS", desc: "Sắc ký lỏng/khí ghép khối phổ (phân tích thành phần hỗn hợp)." },
+            { name: "Spectrophotometry", desc: "Đo quang phổ (xác định nồng độ chất dựa trên hấp thụ ánh sáng)." },
+            { name: "Analytical Method", desc: "Xây dựng và thẩm định quy trình phân tích mẫu." },
+            { name: "ISO Standards", desc: "Các tiêu chuẩn ISO (9001, 14001, 17025...)." },
+            { name: "R&D Methodology", desc: "Thiết kế thí nghiệm (DOE) và phát triển sản phẩm mới." }
+        ]
+    },
+    {
+        id: "design",
+        name: "Kỹ sư Thiết kế kỹ thuật",
+        tools: [
+            { name: "AutoCAD", desc: "Phần mềm thiết kế bản vẽ 2D/3D kỹ thuật." },
+            { name: "SolidWorks", desc: "Thiết kế và mô phỏng mô hình cơ khí 3D." },
+            { name: "Sơ đồ P&ID", desc: "Sơ đồ đường ống và thiết bị đo lường trong nhà máy." },
+            { name: "Simulation Tools", desc: "Các công cụ mô phỏng quá trình (Aspen HYSYS, PRO/II...)." }
+        ]
+    },
+    {
+        id: "consultant",
+        name: "Kỹ sư Tư vấn giải pháp",
+        tools: [
+            { name: "Problem Solving", desc: "Phương pháp giải quyết vấn đề có hệ thống." },
+            { name: "Presentation", desc: "Kỹ năng thuyết trình và trình bày giải pháp." },
+            { name: "Cost-Benefit Analysis", desc: "Phân tích tỉ lệ chi phí và lợi ích của dự án." },
+            { name: "Regulatory Compliance", desc: "Tư vấn về luật môi trường và các quy định pháp lý." }
+        ]
+    },
+    {
+        id: "sales",
+        name: "Kỹ sư Sales Kỹ thuật",
+        tools: [
+            { name: "Product Knowledge", desc: "Khả năng am hiểu sâu sắc về thông số kỹ thuật sản phẩm." },
+            { name: "Networking", desc: "Kỹ năng xây dựng và quản trị mối quan hệ khách hàng." },
+            { name: "Negotiation", desc: "Kỹ năng đàm phán và thuyết phục trong kinh doanh." }
+        ]
+    },
+    {
+        id: "maintenance",
+        name: "Kỹ sư Bảo trì",
+        tools: [
+            { name: "Mechanical/Electrical", desc: "Kiến thức về cơ khí và hệ thống điện công nghiệp." },
+            { name: "Preventive Maintenance", desc: "Quy trình bảo trì phòng ngừa sự cố định kỳ." },
+            { name: "Troubleshooting", desc: "Chẩn đoán lỗi phần cứng và hệ thống điều khiển." }
+        ]
+    },
+];
+
+const SCORING_RUBRIC = [
+    { level: 1, label: "Mới biết", detail: "Chưa từng sử dụng/mới nghe tên qua lý thuyết." },
+    { level: 2, label: "Đã học", detail: "Hiểu lý thuyết cơ bản, đã quan sát hoặc thực hành ít." },
+    { level: 3, label: "Biết dùng", detail: "Có thể vận hành cơ bản nhưng cần hướng dẫn/tài liệu." },
+    { level: 4, label: "Thành thạo", detail: "Tự tin vận hành độc lập và xử lý sự cố thông thường." },
+    { level: 5, label: "Chuyên gia", detail: "Bậc thầy, có thể tối ưu quy trình và hướng dẫn người khác." },
 ];
 
 /**
@@ -105,12 +167,13 @@ export default function SCLSConnectSurvey() {
 
     const radarData = useMemo(() => {
         if (!selectedPos || !result) return [];
+        const toolNames = selectedPos.tools.map(t => t.name);
         return [
-            { name: selectedPos.tools[0], user: formData.ask_scores[selectedPos.tools[0]] || 1, target: 4 },
-            { name: selectedPos.tools[1], user: formData.ask_scores[selectedPos.tools[1]] || 1, target: 4 },
-            { name: selectedPos.tools[2], user: formData.ask_scores[selectedPos.tools[2]] || 1, target: 4 },
-            { name: "Technical English", user: formData.ask_scores["Technical English"] || 1, target: 4 },
-            { name: "Problem Solving", user: 3, target: 5 },
+            { name: toolNames[0], user: formData.ask_scores[toolNames[0]] || 1, target: 4 },
+            { name: toolNames[1], user: formData.ask_scores[toolNames[1]] || 1, target: 4 },
+            { name: toolNames[2], user: formData.ask_scores[toolNames[2]] || 1, target: 4 },
+            { name: "English", user: formData.ask_scores["Technical English"] || 1, target: 4 },
+            { name: "Soft Skills", user: 3, target: 5 },
         ];
     }, [selectedPos, result, formData.ask_scores]);
 
@@ -227,18 +290,44 @@ export default function SCLSConnectSurvey() {
             {step === 3 && (
                 <div className="animate-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
                     <div className="step-indicator"><div className="step-indicator-fill" style={{ width: '75%' }}></div></div>
-                    <h2 className="headline" style={{ marginBottom: '1rem' }}>Đánh giá Kỹ năng</h2>
-                    <p style={{ color: '#86868B', marginBottom: '2.5rem' }}>Dùng thanh điểm 1 (Biết) đến 5 (Chuyên gia).</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                        <div>
+                            <h2 className="headline" style={{ marginBottom: '0.5rem' }}>Đánh giá Kỹ năng</h2>
+                            <p style={{ color: '#86868B' }}>Chọn kỹ năng của bạn trên thang điểm 1-5.</p>
+                        </div>
+                    </div>
+
+                    {/* Scoring Rubric Summary */}
+                    <div className="apple-card" style={{ padding: '1.25rem', background: '#F0F9F4', border: '1px solid #D1EADE', marginBottom: '1.5rem', borderRadius: '16px' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#005A31', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tiêu chuẩn đánh giá (Rubric)</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
+                            {SCORING_RUBRIC.map(unit => (
+                                <div key={unit.level} style={{ fontSize: '0.7rem', lineHeight: '1.4' }}>
+                                    <div style={{ fontWeight: '800', color: '#333' }}>Lvl {unit.level}: {unit.label}</div>
+                                    <div style={{ color: '#666' }}>{unit.detail}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="apple-card" style={{ padding: '2rem' }}>
-                        {[...selectedPos.tools, "Technical English"].map(tool => (
-                            <div key={tool} style={{ marginBottom: '2.5rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                    <span style={{ fontSize: '1.15rem', fontWeight: '700' }}>{tool}</span>
-                                    <span style={{ color: '#005A31', fontWeight: '900', fontSize: '1.5rem' }}>{formData.ask_scores[tool] || '—'}</span>
+                        {[...selectedPos.tools, { name: "Technical English", desc: "Kỹ năng đọc hiểu tài liệu và giao tiếp chuyên môn." }].map(tool => (
+                            <div key={tool.name} style={{ marginBottom: '2.5rem' }}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '1.15rem', fontWeight: '700' }}>{tool.name}</span>
+                                        <span style={{ color: '#005A31', fontWeight: '900', fontSize: '1.5rem' }}>{formData.ask_scores[tool.name] || '—'}</span>
+                                    </div>
+                                    <p style={{ fontSize: '0.85rem', color: '#86868B', marginTop: '4px' }}>{tool.desc}</p>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8F8F9', padding: '8px', borderRadius: '100px' }}>
                                     {[1, 2, 3, 4, 5].map(num => (
-                                        <div key={num} onClick={() => updateScore(tool, num)} className={`score-dot ${formData.ask_scores[tool] === num ? 'active' : ''}`}>
+                                        <div
+                                            key={num}
+                                            onClick={() => updateScore(tool.name, num)}
+                                            className={`score-dot ${formData.ask_scores[tool.name] === num ? 'active' : ''}`}
+                                            title={SCORING_RUBRIC[num - 1].detail}
+                                        >
                                             {num}
                                         </div>
                                     ))}
