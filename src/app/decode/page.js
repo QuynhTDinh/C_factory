@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { decodeJD } from "@/lib/api";
-import { recordActivity } from "@/lib/db";
+import { logTrace } from "@/lib/tracing";
 
 export default function DecodePage() {
     const [jdContent, setJdContent] = useState("");
@@ -20,6 +20,8 @@ export default function DecodePage() {
         setError(null);
         setResult(null);
 
+        logTrace("JD Decode Started", { role, company, industry });
+
         try {
             const response = await decodeJD({
                 content: jdContent,
@@ -30,17 +32,16 @@ export default function DecodePage() {
             const decodedData = response.data;
             setResult(decodedData);
 
-            // ── Master Database Logging ──
-            await recordActivity({
-                type: "Decode",
-                context: decodedData.role || role || "N/A",
-                summary: `${decodedData.competencies?.length || 0} năng lực, Cấp bậc: ${decodedData.seniority}`,
-                score: decodedData.difficulty_score || "",
-                payload: decodedData,
-                input: { jdContent, role, company, industry }
+            // ── Local Tracing ──
+            logTrace("JD Decode Success", {
+                role: decodedData.role || role || "N/A",
+                company: company || decodedData.company || "N/A",
+                competencyCount: decodedData.competencies?.length || 0,
+                seniority: decodedData.seniority,
+                result: decodedData
             });
 
-            // Save to history (localStorage - legacy support)
+            // Save to personal history (localStorage)
             try {
                 const history = JSON.parse(localStorage.getItem("cfactory_history") || "[]");
                 history.unshift({
@@ -56,6 +57,7 @@ export default function DecodePage() {
             } catch (e) { }
         } catch (err) {
             setError(err.message);
+            logTrace("JD Decode Error", { error: err.message, input: { role, company } });
         } finally {
             setLoading(false);
         }
@@ -68,23 +70,10 @@ export default function DecodePage() {
         return "";
     };
 
-    const getBarClass = (level) => {
-        if (level <= 2) return "green";
-        if (level === 3) return "orange";
-        return "red";
-    };
-
     const getPriorityBadge = (priority) => {
         if (priority === "high") return { cls: "badge-required", text: "Bắt buộc" };
         if (priority === "medium") return { cls: "badge-preferred", text: "Ưu tiên" };
         return { cls: "badge-optional", text: "Nên có" };
-    };
-
-    const getDifficultyColor = (score) => {
-        if (score <= 3) return "var(--accent-green)";
-        if (score <= 5) return "var(--accent-orange)";
-        if (score <= 7) return "#E8720C";
-        return "var(--accent-red)";
     };
 
     return (

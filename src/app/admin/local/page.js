@@ -1,114 +1,133 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getTraces, clearAllLocalData } from "@/lib/tracing";
 import Link from "next/link";
 
 export default function LocalAdminDashboard() {
     const [traces, setTraces] = useState([]);
-    const [history, setHistory] = useState([]);
-    const [activeTab, setActiveTab] = useState("traces");
+    const [selectedTrace, setSelectedTrace] = useState(null);
+    const [activeFilter, setActiveFilter] = useState("All");
 
     useEffect(() => {
-        const loadLocalData = () => {
-            const localTraces = JSON.parse(localStorage.getItem("scls_traces") || "[]");
-            const localHistory = JSON.parse(localStorage.getItem("scls_history") || "[]");
-            setTraces(localTraces.reverse());
-            setHistory(localHistory.reverse());
+        const loadTraces = () => {
+            const data = getTraces();
+            setTraces(data);
         };
-        loadLocalData();
-        // Refresh every 5 seconds for "real-time" feel
-        const interval = setInterval(loadLocalData, 5000);
+        loadTraces();
+        const interval = setInterval(loadTraces, 3000);
         return () => clearInterval(interval);
     }, []);
 
-    const clearLocalData = () => {
-        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu local không?")) {
-            localStorage.removeItem("scls_traces");
-            localStorage.removeItem("scls_history");
-            localStorage.removeItem("scls_current_session");
+    const filteredTraces = activeFilter === "All"
+        ? traces
+        : traces.filter(t => t.action.includes(activeFilter));
+
+    const handleClear = () => {
+        if (confirm("Xóa toàn bộ dấu vết local?")) {
+            clearAllLocalData();
             setTraces([]);
-            setHistory([]);
         }
     };
 
     return (
-        <div style={{ padding: '3rem', minHeight: '100vh', background: '#F5F5F7', fontFamily: '-apple-system, sans-serif' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+        <div style={{ padding: '2.5rem', minHeight: '100vh', background: '#F5F5F7', fontFamily: '-apple-system, system-ui' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
                     <div>
-                        <h1 style={{ fontSize: '2.5rem', fontWeight: '800' }}>Local Dashboard</h1>
-                        <p style={{ color: '#86868b' }}>Theo dõi dữ liệu và dấu vết người dùng trực tiếp trong trình duyệt.</p>
+                        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', letterSpacing: '-0.02em' }}>C Factory Trace Console</h1>
+                        <p style={{ color: '#86868b', marginTop: '0.5rem' }}>Theo dõi hành vi và dữ liệu local trực tiếp (Option 0).</p>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
-                        <button onClick={clearLocalData} style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid #ff3b30', background: 'transparent', color: '#ff3b30', fontWeight: '700', cursor: 'pointer' }}>
-                            Xóa dữ liệu
+                        <button onClick={handleClear} style={{ background: '#fff', border: '1px solid #ff3b30', color: '#ff3b30', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: '600', cursor: 'pointer' }}>Xóa sạch Local</button>
+                        <Link href="/decode" style={{ background: '#000', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: '600', textDecoration: 'none' }}>Về Giải mã JD</Link>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem' }}>
+                    {["All", "Decode", "Match", "Error", "Survey"].map(f => (
+                        <button
+                            key={f}
+                            onClick={() => setActiveFilter(f)}
+                            style={{
+                                padding: '0.6rem 1.2rem',
+                                borderRadius: '100px',
+                                border: 'none',
+                                background: activeFilter === f ? '#000' : '#fff',
+                                color: activeFilter === f ? '#fff' : '#86868b',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: activeFilter === f ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+                            }}
+                        >
+                            {f}
                         </button>
-                        <Link href="/scls-connect" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', background: '#000', color: '#fff', fontWeight: '700', textDecoration: 'none' }}>
-                            Về Survey
-                        </Link>
-                    </div>
+                    ))}
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                    <button onClick={() => setActiveTab("traces")} style={{ padding: '1rem 2rem', borderRadius: '12px', border: 'none', background: activeTab === "traces" ? "#000" : "#fff", color: activeTab === "traces" ? "#fff" : "#000", fontWeight: '700', cursor: 'pointer' }}>
-                        Dấu vết (Traces) [{traces.length}]
-                    </button>
-                    <button onClick={() => setActiveTab("history")} style={{ padding: '1rem 2rem', borderRadius: '12px', border: 'none', background: activeTab === "history" ? "#000" : "#fff", color: activeTab === "history" ? "#fff" : "#000", fontWeight: '700', cursor: 'pointer' }}>
-                        Lịch sử nộp bài [{history.length}]
-                    </button>
-                </div>
-
-                {activeTab === "traces" && (
-                    <div style={{ background: 'white', borderRadius: '24px', padding: '2rem', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                        <div style={{ overflowY: 'auto', maxHeight: '600px' }}>
-                            {traces.length === 0 && <p style={{ textAlign: 'center', color: '#86868b', padding: '3rem' }}>Chưa có dấu vết hành động nào.</p>}
-                            {traces.map((t, idx) => (
-                                <div key={idx} style={{ display: 'flex', gap: '20px', padding: '1.5rem 0', borderBottom: '1px solid #f5f5f7' }}>
-                                    <div style={{ color: '#86868b', fontSize: '0.8rem', minWidth: '150px' }}>
-                                        {new Date(t.timestamp).toLocaleTimeString()}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>
-                                            <span style={{ color: '#8B1D1D' }}>[{t.userName}]</span> {t.action}
-                                        </div>
-                                        <div style={{ fontSize: '0.85rem', color: '#86868b' }}>
-                                            Step: {t.step} | details: {JSON.stringify(t.details)}
-                                        </div>
-                                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: selectedTrace ? '1fr 1.2fr' : '1fr', gap: '2rem' }}>
+                    {/* Trace List */}
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '1.5rem', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', overflowY: 'auto', maxHeight: '750px' }}>
+                        {filteredTraces.length === 0 && <p style={{ textAlign: 'center', padding: '4rem', color: '#86868b' }}>Chưa có bản ghi nào.</p>}
+                        {filteredTraces.map((t, idx) => (
+                            <div
+                                key={idx}
+                                onClick={() => setSelectedTrace(t)}
+                                style={{
+                                    padding: '1.25rem',
+                                    borderBottom: '1px solid #f5f5f7',
+                                    cursor: 'pointer',
+                                    background: selectedTrace?.id === t.id ? '#F5F5F7' : 'transparent',
+                                    borderRadius: '12px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                    <span style={{
+                                        fontSize: '10px',
+                                        fontWeight: '800',
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
+                                        background: t.action.includes('Success') ? '#F0F9F4' : t.action.includes('Error') ? '#FFF5F5' : '#EBF5FF',
+                                        color: t.action.includes('Success') ? '#34C759' : t.action.includes('Error') ? '#FF3B30' : '#007AFF',
+                                        textTransform: 'uppercase'
+                                    }}>{t.action}</span>
+                                    <span style={{ fontSize: '12px', color: '#86868b' }}>{new Date(t.timestamp).toLocaleTimeString()}</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "history" && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                        {history.length === 0 && <p style={{ textAlign: 'center', color: '#86868b', gridColumn: '1/-1', padding: '3rem' }}>Chưa có bản ghi nộp bài nào.</p>}
-                        {history.map((h, idx) => (
-                            <div key={idx} className="apple-card" style={{ background: '#fff', padding: '1.5rem', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                    <div style={{ fontWeight: '800' }}>{h.formData.name}</div>
-                                    <div style={{ fontSize: '0.8rem', color: '#86868b' }}>{new Date(h.timestamp).toLocaleDateString()}</div>
-                                </div>
-                                <div style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>
-                                    <strong>Major:</strong> {h.formData.major}<br />
-                                    <strong>Match Score:</strong> {h.result.match_score}%
-                                </div>
-                                <button
-                                    onClick={() => alert(JSON.stringify(h.result, null, 2))}
-                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #ddd', background: '#f5f5f7', fontWeight: '600', cursor: 'pointer' }}
-                                >
-                                    Xem JSON thô
-                                </button>
+                                <div style={{ fontWeight: '700', fontSize: '1rem' }}>{t.details.role || t.details.best_match || "Action Start"}</div>
+                                {t.details.company && <div style={{ fontSize: '0.85rem', color: '#86868b' }}>{t.details.company}</div>}
                             </div>
                         ))}
                     </div>
-                )}
+
+                    {/* Inspector Panel */}
+                    {selectedTrace && (
+                        <div style={{ background: '#fff', borderRadius: '24px', padding: '2rem', boxShadow: '0 8px 32px rgba(0,0,0,0.08)', position: 'sticky', top: '2rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                                <div>
+                                    <h2 style={{ fontWeight: '800' }}>Trace Inspector</h2>
+                                    <code style={{ fontSize: '0.8rem', color: '#86868b' }}>ID: {selectedTrace.id}</code>
+                                </div>
+                                <button onClick={() => setSelectedTrace(null)} style={{ border: 'none', background: '#F5F5F7', padding: '0.5rem 1rem', borderRadius: '10px', cursor: 'pointer' }}>Đóng ×</button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div style={{ background: '#F9F9FB', padding: '1.5rem', borderRadius: '16px' }}>
+                                    <h4 style={{ marginBottom: '0.5rem', opacity: 0.6 }}>Thông tin cơ bản</h4>
+                                    <p><strong>Path:</strong> {selectedTrace.path}</p>
+                                    <p><strong>Time:</strong> {selectedTrace.timestamp}</p>
+                                </div>
+
+                                <div style={{ background: '#000', color: '#0f0', padding: '1.5rem', borderRadius: '16px', overflowX: 'auto' }}>
+                                    <h4 style={{ color: '#aaa', marginBottom: '1rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>Dữ liệu JSON Payload</h4>
+                                    <pre style={{ fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{JSON.stringify(selectedTrace.details, null, 2)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-            <style jsx>{`
-                .apple-card { transition: all 0.2s; }
-                .apple-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-            `}</style>
         </div>
     );
 }

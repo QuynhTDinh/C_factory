@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { compareJDs } from "@/lib/api";
-import { recordActivity } from "@/lib/db";
+import { logTrace } from "@/lib/tracing";
 
 const EMPTY_JD = { content: "", role: "", company: "", industry: "" };
 
@@ -42,6 +42,8 @@ export default function ComparePage() {
                 industry: j.industry || undefined,
             }));
 
+        logTrace("CV Match Started", { jds_count: filledJds.length });
+
         try {
             const response = await compareJDs({
                 cv_content: cvContent,
@@ -49,19 +51,18 @@ export default function ComparePage() {
             });
             setResult(response);
 
-            // ── Master Database Logging ──
+            // ── Local Tracing ──
             const bestMatch = response.comparison?.ranking?.[0];
-            await recordActivity({
-                type: "Compare",
-                context: cvContent.substring(0, 50) + "...",
-                summary: `So sánh ${filledJds.length} JD. Best: ${bestMatch?.role} (${bestMatch?.match_score}%)`,
-                score: bestMatch?.match_score || "",
-                payload: response,
-                input: { cvContent, jds: filledJds }
+            logTrace("CV Match Success", {
+                best_match: bestMatch?.role,
+                score: bestMatch?.match_score,
+                jds_compared: filledJds.map(j => j.role),
+                result: response
             });
 
         } catch (err) {
             setError(err.message);
+            logTrace("CV Match Error", { error: err.message });
         } finally {
             setLoading(false);
         }

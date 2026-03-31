@@ -19,16 +19,13 @@ export async function POST(req) {
         // Action 2: Data Logging (Await for Vercel Serverless)
         // Field Mapping for Vietnamese Headers in Google Sheet
         const logData = {
-            "Mã ứng viên": `SCLS-${Date.now().toString().slice(-6)}`,
-            "Họ và tên": name,
-            "Email": email,
-            "Chuyên ngành": major,
-            "Lộ trình nghề nghiệp mong muốn": target_position,
-            "Cấp độ năng lực": `${aiResult.match_score || 0}%`,
-            "Ghi chú": aiResult.gaps?.[0]?.explanation || "N/A",
-            "Thời gian": new Date().toLocaleString("vi-VN"),
-            "Full Report JSON": JSON.stringify(aiResult), // Essential for Admin Dashboard
-            "Raw Form Data": JSON.stringify(data)
+            "Mã ứng viên": "Assess", // Type
+            "Họ và tên": name,       // Context
+            "Email": new Date().toLocaleString("vi-VN"), // Timestamp
+            "Chuyên ngành": aiResult.summary, // Summary
+            "Cấp độ năng lực": `${aiResult.match_score || 0}%`, // Score
+            "Lộ trình nghề nghiệp mong muốn": JSON.stringify(aiResult), // Full Report JSON
+            "Ghi chú": JSON.stringify(data) // Raw Form Data
         };
 
         // Log to external API (SheetDB/Make)

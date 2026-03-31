@@ -116,13 +116,13 @@ export default function AdminPage() {
                             <div style={{ overflowY: 'auto', maxHeight: '500px' }}>
                                 {selectedRecord.Type === 'Assess' ? (
                                     <ReportView
-                                        result={JSON.parse(selectedRecord["Full Report JSON"])}
-                                        formData={JSON.parse(selectedRecord["Raw Form Data"])}
+                                        result={JSON.parse(selectedRecord.FullReport)}
+                                        formData={JSON.parse(selectedRecord.RawData)}
                                         isAdmin={true}
                                     />
                                 ) : (
                                     <div style={{ background: '#000', color: '#0f0', padding: '1.5rem', borderRadius: '12px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(JSON.parse(selectedRecord["Full Report JSON"]), null, 2)}</pre>
+                                        <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(JSON.parse(selectedRecord.FullReport), null, 2)}</pre>
                                     </div>
                                 )}
                             </div>
