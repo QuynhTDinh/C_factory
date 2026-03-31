@@ -81,7 +81,8 @@ export default function AdminPage() {
     };
 
     const renderCVMatch = (data) => {
-        const ranking = data.comparison?.ranking || [];
+        const res = data.result || data;
+        const ranking = res.comparison?.ranking || [];
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <h4 style={{ fontSize: '0.9rem', color: '#86868b', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>BẢNG XẾP HẠNG CƠ HỘI</h4>
@@ -191,17 +192,21 @@ export default function AdminPage() {
 
                             <div style={{ overflowY: 'auto', maxHeight: '550px' }}>
                                 {(() => {
-                                    const payload = JSON.parse(selectedRecord.FullReport);
-                                    if (selectedRecord.Type.includes('Decode Success')) return renderJDAnalysis(payload);
-                                    if (selectedRecord.Type.includes('Match Success')) return renderCVMatch(payload);
-                                    if (selectedRecord.Type === 'Assess' || selectedRecord.Type.includes('Survey')) return (
-                                        <ReportView result={payload} formData={JSON.parse(selectedRecord.RawData)} isAdmin={true} />
-                                    );
-                                    return (
-                                        <div style={{ background: '#000', color: '#0f0', padding: '1.5rem', borderRadius: '16px' }}>
-                                            <pre style={{ fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{JSON.stringify(payload, null, 2)}</pre>
-                                        </div>
-                                    );
+                                    try {
+                                        const payload = JSON.parse(selectedRecord.FullReport);
+                                        if (selectedRecord.Type.includes('Decode Success')) return renderJDAnalysis(payload);
+                                        if (selectedRecord.Type.includes('Match Success')) return renderCVMatch(payload);
+                                        if (selectedRecord.Type === 'Assess' || selectedRecord.Type.includes('Survey')) return (
+                                            <ReportView result={payload} formData={JSON.parse(selectedRecord.RawData)} isAdmin={true} />
+                                        );
+                                        return (
+                                            <div style={{ background: '#000', color: '#0f0', padding: '1.5rem', borderRadius: '16px' }}>
+                                                <pre style={{ fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>{JSON.stringify(payload, null, 2)}</pre>
+                                            </div>
+                                        );
+                                    } catch (e) {
+                                        return <p style={{ color: '#ff3b30' }}>Lỗi khi phân tích dữ liệu Trace.</p>;
+                                    }
                                 })()}
                             </div>
                         </div>
