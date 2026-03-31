@@ -1,53 +1,69 @@
 /**
- * C Factory Trace Logger (Option 0 - Local Only)
- * Manages detailed user action logs in localStorage.
+ * C Factory Trace Logger (Centralized Sync)
+ * Manages user action logs in local storage AND syncs to SheetDB for cross-device visibility.
  */
+
+import { recordActivity } from "./db";
 
 const TRACE_KEY = "cfactory_traces";
-const HISTORY_KEY = "cfactory_history";
 
 /**
- * Logs a specific user action with details.
- * @param {string} action - Descriptive action name (e.g., 'Decode Start', 'CV Match Success')
+ * Logs a specific user action with details and syncs to cloud.
+ * @param {string} action - Descriptive action name (e.g., 'JD Decode Success')
  * @param {Object} details - Additional data (input, result summary, errors)
+ * @param {boolean} syncToCloud - Whether to sync to SheetDB (default: true)
  */
-export function logTrace(action, details = {}) {
+export async function logTrace(action, details = {}, syncToCloud = true) {
     if (typeof window === "undefined") return;
 
     try {
-        const traces = JSON.parse(localStorage.getItem(TRACE_KEY) || "[]");
-        const newTrace = {
-            id: Date.now() + Math.random().toString(36).slice(2, 7),
-            timestamp: new Date().toISOString(),
-            action,
-            details,
-            path: window.location.pathname
-        };
+        const id = Date.now() + Math.random().toString(36).slice(2, 7);
+        const timestamp = new Date().toISOString();
+        const path = window.location.pathname;
 
-        // Keep last 200 traces
+        const newTrace = { id, timestamp, action, details, path };
+
+        // 1. Local Logging (Fallback/Redundant)
+        const traces = JSON.parse(localStorage.getItem(TRACE_KEY) || "[]");
         traces.unshift(newTrace);
-        localStorage.setItem(TRACE_KEY, JSON.stringify(traces.slice(0, 200)));
+        localStorage.setItem(TRACE_KEY, JSON.stringify(traces.slice(0, 100)));
 
         console.debug(`[Trace] ${action}`, details);
+
+        // 2. Cloud Sync (Centralized Visibility)
+        if (syncToCloud) {
+            // Simplified summary for the trace feed
+            const summary = details.result?.raw_jd_summary || details.error || action;
+            const score = details.score || details.result?.difficulty_score || "";
+            const context = details.role || details.best_match || "System Action";
+
+            await recordActivity({
+                type: action,
+                context,
+                summary,
+                score,
+                payload: details, // Full details as payload
+                input: { path, timestamp }
+            });
+        }
     } catch (e) {
-        console.warn("Tracing failed:", e);
+        console.warn("Tracing/Sync failed:", e);
     }
 }
 
 /**
- * Retrieves all local traces.
+ * Retrieves all local traces (for local dev/diagnostics).
  */
-export function getTraces() {
+export function getLocalTraces() {
     if (typeof window === "undefined") return [];
     return JSON.parse(localStorage.getItem(TRACE_KEY) || "[]");
 }
 
 /**
- * Clears all local tracing and history data.
+ * Clears local tracing data.
  */
-export function clearAllLocalData() {
+export function clearLocalTraces() {
     if (typeof window === "undefined") return;
     localStorage.removeItem(TRACE_KEY);
-    localStorage.removeItem(HISTORY_KEY);
     localStorage.removeItem("cfactory_current_session");
 }
