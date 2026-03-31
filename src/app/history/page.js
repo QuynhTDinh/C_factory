@@ -1,151 +1,123 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { fetchActivities } from "@/lib/db";
+import Link from "next/link";
 
 export default function HistoryPage() {
     const [records, setRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState("All");
 
     useEffect(() => {
-        try {
-            const history = JSON.parse(localStorage.getItem("cfactory_history") || "[]");
-            setRecords(history);
-        } catch {
-            setRecords([]);
-        }
+        const loadHistory = async () => {
+            setLoading(true);
+            try {
+                // Fetch from Master Database
+                const masterData = await fetchActivities();
+
+                // Get Local History (Legacy)
+                const localHistory = JSON.parse(localStorage.getItem("cfactory_history") || "[]");
+
+                // Combine and Deduplicate (simple id or timestamp check)
+                setRecords(masterData);
+            } catch (e) {
+                console.error("Failed to load history", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadHistory();
     }, []);
 
-    const deleteRecord = (id) => {
-        const updated = records.filter((r) => r.id !== id);
-        setRecords(updated);
-        localStorage.setItem("cfactory_history", JSON.stringify(updated));
-    };
+    const filteredRecords = filter === "All"
+        ? records
+        : records.filter(r => r.Type === filter || (filter === "Decode" && r.Type === "JD Decode") || (filter === "Compare" && r.Type === "CV Match"));
 
-    const clearAll = () => {
-        setRecords([]);
-        localStorage.removeItem("cfactory_history");
-    };
-
-    const [expandedId, setExpandedId] = useState(null);
-
-    const formatDate = (iso) => {
-        const d = new Date(iso);
-        return d.toLocaleDateString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
+    const formatDate = (dateStr) => {
+        return dateStr || "N/A";
     };
 
     return (
-        <div className="page">
-            <div className="container-narrow" style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
-                <div className="animate-in" style={{ marginBottom: "2rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div>
-                            <h1 className="headline">Lịch sử phân tích</h1>
-                            <p className="subheadline mt-1">
-                                {records.length > 0
-                                    ? `${records.length} kết quả đã lưu`
-                                    : "Chưa có kết quả nào."}
-                            </p>
-                        </div>
-                        {records.length > 0 && (
-                            <button className="btn btn-outline btn-sm" onClick={clearAll}>
-                                Xóa tất cả
-                            </button>
-                        )}
+        <div className="page" style={{ padding: '2.5rem', minHeight: '100vh', background: '#F5F5F7' }}>
+            <div className="container-narrow" style={{ maxWidth: '900px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+                    <div>
+                        <h1 className="headline" style={{ fontSize: '2.5rem', fontWeight: '800' }}>Lịch sử C Factory</h1>
+                        <p style={{ color: '#86868b', marginTop: '0.5rem' }}>Dữ liệu giải mã và đối chiếu năng lực được lưu trữ tập trung.</p>
                     </div>
                 </div>
 
-                {records.length === 0 && (
-                    <div className="card text-center" style={{ padding: "3rem" }}>
-                        <p className="body-text" style={{ marginBottom: "1rem" }}>
-                            Bạn chưa thực hiện phân tích nào.
-                        </p>
-                        <a href="/decode" className="btn btn-primary">
-                            Bắt đầu phân tích
-                        </a>
-                    </div>
-                )}
-
-                <div className="stagger" style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
-                    {records.map((record) => (
-                        <div key={record.id} className="card" style={{ cursor: "pointer" }}>
-                            {/* Summary row */}
-                            <div
-                                onClick={() => setExpandedId(expandedId === record.id ? null : record.id)}
-                                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                            >
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600 }}>
-                                        {record.role}
-                                        {record.company && (
-                                            <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
-                                                {" "}— {record.company}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div style={{ display: "flex", gap: "1rem", marginTop: "0.25rem" }}>
-                                        <span className="form-hint">{formatDate(record.timestamp)}</span>
-                                        <span className="form-hint">{record.competencyCount} năng lực</span>
-                                        {record.seniority && <span className="form-hint">{record.seniority}</span>}
-                                    </div>
-                                </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                    <button
-                                        className="btn btn-outline btn-sm"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            deleteRecord(record.id);
-                                        }}
-                                        style={{ padding: "0.375rem 0.75rem", fontSize: "0.75rem" }}
-                                    >
-                                        Xóa
-                                    </button>
-                                    <span style={{ fontSize: "0.875rem", color: "var(--text-muted)", transform: expandedId === record.id ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>
-                                        ›
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Expanded detail */}
-                            {expandedId === record.id && record.result && (
-                                <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border-subtle)" }}>
-                                    <p className="body-text mb-2">{record.result.raw_jd_summary}</p>
-
-                                    {record.result.difficulty_score && (
-                                        <div className="difficulty-meter mb-2">
-                                            <span className="form-hint">Độ khó</span>
-                                            <div className="difficulty-bar">
-                                                <div
-                                                    className="difficulty-fill"
-                                                    style={{
-                                                        width: `${record.result.difficulty_score * 10}%`,
-                                                        background: record.result.difficulty_score <= 5 ? "var(--accent-green)" : "var(--accent-red)",
-                                                    }}
-                                                />
-                                            </div>
-                                            <span className="difficulty-label">
-                                                {record.result.difficulty_label} ({record.result.difficulty_score}/10)
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem" }}>
-                                        {record.result.competencies?.map((comp, i) => (
-                                            <span key={i} className={`level-tag ${comp.level <= 2 ? "level-know" : comp.level === 3 ? "level-do" : "level-optimize"}`}>
-                                                {comp.name_vi} · L{comp.level}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem' }}>
+                    {["All", "Decode", "Compare", "Assess"].map(t => (
+                        <button
+                            key={t}
+                            onClick={() => setFilter(t)}
+                            style={{
+                                padding: '0.625rem 1.25rem',
+                                borderRadius: '100px',
+                                border: 'none',
+                                background: filter === t ? '#000' : '#fff',
+                                color: filter === t ? '#fff' : '#86868b',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: filter === t ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+                            }}
+                        >
+                            {t}
+                        </button>
                     ))}
                 </div>
+
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+                        <div className="loading-spinner" style={{ width: '40px', height: '40px', margin: '0 auto' }} />
+                        <p style={{ marginTop: '1rem', color: '#86868b' }}>Đang tải dữ liệu từ Master DB...</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {filteredRecords.length === 0 && (
+                            <div className="card text-center" style={{ padding: '4rem' }}>
+                                <p style={{ color: '#86868b' }}>Chưa có bản ghi nào phù hợp.</p>
+                            </div>
+                        )}
+                        {filteredRecords.map((r, idx) => (
+                            <div key={idx} className="card animate-in" style={{ padding: '1.5rem', borderRadius: '18px', background: '#fff', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 4px 6px rgba(0,0,0,0.01)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                            <span style={{
+                                                fontSize: '10px',
+                                                fontWeight: '800',
+                                                textTransform: 'uppercase',
+                                                padding: '2px 8px',
+                                                borderRadius: '4px',
+                                                background: r.Type === 'Decode' ? '#EBF5FF' : r.Type === 'Compare' ? '#F0F9F4' : '#FFF5F5',
+                                                color: r.Type === 'Decode' ? '#007AFF' : r.Type === 'Compare' ? '#34C759' : '#FF3B30'
+                                            }}>
+                                                {r.Type}
+                                            </span>
+                                            <span style={{ fontSize: '12px', color: '#86868b' }}>{formatDate(r.Timestamp)}</span>
+                                        </div>
+                                        <div style={{ fontWeight: '700', fontSize: '1.1rem' }}>{r.Context}</div>
+                                        <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>{r.Summary}</p>
+                                    </div>
+                                    {r.Score && (
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#000' }}>{r.Score}%</div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
+            <style jsx>{`
+                .animate-in { animation: slideUp 0.5s ease-out forwards; }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .loading-spinner { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #000; border-radius: 50%; animation: spin 1s linear infinite; }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            `}</style>
         </div>
     );
 }

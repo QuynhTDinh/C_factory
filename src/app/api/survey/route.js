@@ -25,7 +25,10 @@ export async function POST(req) {
             "Chuyên ngành": major,
             "Lộ trình nghề nghiệp mong muốn": target_position,
             "Cấp độ năng lực": `${aiResult.match_score || 0}%`,
-            "Ghi chú": aiResult.gaps?.[0]?.explanation || "N/A"
+            "Ghi chú": aiResult.gaps?.[0]?.explanation || "N/A",
+            "Thời gian": new Date().toLocaleString("vi-VN"),
+            "Full Report JSON": JSON.stringify(aiResult), // Essential for Admin Dashboard
+            "Raw Form Data": JSON.stringify(data)
         };
 
         // Log to external API (SheetDB/Make)
