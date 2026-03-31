@@ -69,3 +69,11 @@ export const POSITIONS = [
         ]
     },
 ];
+
+export const SCORING_RUBRIC = [
+    { level: 1, label: "Số 0/Biết", detail: "Chưa có kinh nghiệm thực tế. Chỉ nắm lý thuyết cơ bản hoặc mới nghe qua." },
+    { level: 2, label: "Làm/Hiểu", detail: "Đã thực hành cơ bản, hiểu quy trình nhưng cần hướng dẫn khi gặp ca khó." },
+    { level: 3, label: "Thành thạo", detail: "Tự tin xử lý độc lập mọi tình huống thông thường trong vận hành." },
+    { level: 4, label: "Tối ưu", detail: "Khả năng tìm ra lỗi và cải tiến quy trình để tăng hiệu suất/chất lượng." },
+    { level: 5, label: "Chuyên gia", detail: "Cố vấn, đào tạo và định hướng giải pháp cho hệ thống lớn." }
+];
