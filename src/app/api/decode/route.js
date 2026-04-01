@@ -74,7 +74,7 @@ Trả về JSON hợp lệ, KHÔNG có text thừa:
 export async function POST(request) {
     try {
         const body = await request.json();
-        const { content, role, company, industry } = body;
+        const { content, role, company, industry, profile } = body;
 
         if (!content || content.trim().length < 30) {
             return NextResponse.json(
@@ -89,6 +89,11 @@ export async function POST(request) {
 ${role ? `Chức danh: ${role}` : ""}
 ${company ? `Công ty: ${company}` : ""}
 ${industry ? `Ngành: ${industry}` : ""}
+
+${profile ? `## Bối cảnh Ứng viên (Hồ sơ của người đang xem)
+- Ngành nghề hiện tại: ${profile.industry}
+- Cấp bậc chuyên môn: ${profile.seniority}
+Lưu ý: Hãy ưu tiên giải thích các năng lực trong JD dựa trên bối cảnh và cấp bậc của ứng viên này.` : ""}
 
 ${content}
 

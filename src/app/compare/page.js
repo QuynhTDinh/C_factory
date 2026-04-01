@@ -3,16 +3,29 @@
 import { useState } from "react";
 import { compareJDs } from "@/lib/api";
 import { logTrace } from "@/lib/tracing";
+import UserContextManager from "@/components/UserContextManager";
+import { useSession } from "next-auth/react";
 
 const EMPTY_JD = { content: "", role: "", company: "", industry: "" };
 
 export default function ComparePage() {
     const [cvContent, setCvContent] = useState("");
+    const [savedCvInfo, setSavedCvInfo] = useState(null);
     const [jds, setJds] = useState([{ ...EMPTY_JD }, { ...EMPTY_JD }, { ...EMPTY_JD }]);
     const [activeJds, setActiveJds] = useState(1);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
+    const { data: session } = useSession();
+
+    useEffect(() => {
+        if (session?.user?.email) {
+            const profile = JSON.parse(localStorage.getItem(`cfactory_profile_${session.user.email}`) || "{}");
+            if (profile.cvContent) {
+                setSavedCvInfo(profile);
+            }
+        }
+    }, [session]);
 
     const updateJD = (index, field, value) => {
         const updated = [...jds];
@@ -32,6 +45,9 @@ export default function ComparePage() {
         setError(null);
         setResult(null);
 
+        // Get profile from localStorage (managed by UserContextManager)
+        const userProfile = JSON.parse(localStorage.getItem(`cfactory_profile_${session?.user?.email}`) || "{}");
+
         const filledJds = jds
             .slice(0, activeJds)
             .filter((j) => j.content.trim().length >= 50)
@@ -42,7 +58,7 @@ export default function ComparePage() {
                 industry: j.industry || undefined,
             }));
 
-        logTrace("CV Match Started", { jds_count: filledJds.length });
+        logTrace("CV Match Started", { jds_count: filledJds.length, user: session?.user, profile: userProfile });
 
         try {
             const response = await compareJDs({
@@ -75,53 +91,66 @@ export default function ComparePage() {
     };
 
     return (
-        <div className="page">
-            <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
-                <div className="animate-in text-center" style={{ marginBottom: "2rem" }}>
-                    <h1 className="headline">Đối chiếu cơ hội</h1>
-                    <p className="subheadline mt-1">So sánh tối đa 3 mô tả công việc với hồ sơ của bạn.</p>
-                </div>
-
-                <div className="card card-elevated animate-in mb-3">
-                    <div className="form-group">
-                        <label className="form-label">Hồ sơ của bạn (CV)</label>
-                        <textarea className="form-textarea" placeholder="Dán nội dung CV..." value={cvContent} onChange={(e) => setCvContent(e.target.value)} style={{ minHeight: "160px" }} />
+        <UserContextManager>
+            <div className="page">
+                <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "4rem" }}>
+                    <div className="animate-in text-center" style={{ marginBottom: "2rem" }}>
+                        <h1 className="headline">Đối chiếu cơ hội</h1>
+                        <p className="subheadline mt-1">So sánh tối đa 3 mô tả công việc với hồ sơ của bạn.</p>
                     </div>
-                </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: `repeat(${activeJds}, 1fr)`, gap: "0.75rem" }}>
-                    {jds.slice(0, activeJds).map((jd, i) => (
-                        <div key={i} className="card card-elevated animate-in">
-                            <div className="caption mb-1">JD {i + 1}</div>
-                            <input className="form-input mb-1" placeholder="Chức danh" value={jd.role} onChange={(e) => updateJD(i, "role", e.target.value)} />
-                            <textarea className="form-textarea" placeholder="Dán nội dung JD..." value={jd.content} onChange={(e) => updateJD(i, "content", e.target.value)} style={{ minHeight: "160px" }} />
-                        </div>
-                    ))}
-                </div>
-
-                <div className="text-center mt-3">
-                    <button className="btn btn-primary btn-lg" onClick={handleCompare} disabled={loading || !canSubmit()}>
-                        {loading ? "Đang phân tích..." : "Phân tích & So sánh"}
-                    </button>
-                </div>
-
-                {error && <div className="card mt-3" style={{ borderColor: "var(--accent-red)" }}><p className="body-text">{error}</p></div>}
-
-                {result && result.comparison && (
-                    <div className="animate-in mt-5">
-                        <h2 className="headline" style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>Kết quả so sánh</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
-                            {result.comparison.ranking?.map((item, index) => (
-                                <div key={index} className="card" style={{ borderColor: getScoreColor(item.match_score), borderWidth: 2 }}>
-                                    <div style={{ fontSize: "2rem", fontWeight: 700, color: getScoreColor(item.match_score) }}>{item.match_score}%</div>
-                                    <div style={{ fontWeight: 600 }}>{item.role}</div>
-                                    <p className="body-text" style={{ fontSize: "0.8rem" }}>{item.key_reason}</p>
-                                </div>
-                            ))}
+                    <div className="card card-elevated animate-in mb-3">
+                        <div className="form-group">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+                                <label className="form-label">Hồ sơ của bạn (CV)</label>
+                                {savedCvInfo && (
+                                    <button
+                                        onClick={() => setCvContent(savedCvInfo.cvContent)}
+                                        className="btn btn-sm btn-outline"
+                                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+                                    >
+                                        ✨ Dùng CV từ hồ sơ
+                                    </button>
+                                )}
+                            </div>
+                            <textarea className="form-textarea" placeholder="Dán nội dung CV..." value={cvContent} onChange={(e) => setCvContent(e.target.value)} style={{ minHeight: "160px" }} />
                         </div>
                     </div>
-                )}
+
+                    <div style={{ display: "grid", gridTemplateColumns: `repeat(${activeJds}, 1fr)`, gap: "0.75rem" }}>
+                        {jds.slice(0, activeJds).map((jd, i) => (
+                            <div key={i} className="card card-elevated animate-in">
+                                <div className="caption mb-1">JD {i + 1}</div>
+                                <input className="form-input mb-1" placeholder="Chức danh" value={jd.role} onChange={(e) => updateJD(i, "role", e.target.value)} />
+                                <textarea className="form-textarea" placeholder="Dán nội dung JD..." value={jd.content} onChange={(e) => updateJD(i, "content", e.target.value)} style={{ minHeight: "160px" }} />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-3">
+                        <button className="btn btn-primary btn-lg" onClick={handleCompare} disabled={loading || !canSubmit()}>
+                            {loading ? "Đang phân tích..." : "Phân tích & So sánh"}
+                        </button>
+                    </div>
+
+                    {error && <div className="card mt-3" style={{ borderColor: "var(--accent-red)" }}><p className="body-text">{error}</p></div>}
+
+                    {result && result.comparison && (
+                        <div className="animate-in mt-5">
+                            <h2 className="headline" style={{ fontSize: "1.5rem", marginBottom: "1.5rem" }}>Kết quả so sánh</h2>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+                                {result.comparison.ranking?.map((item, index) => (
+                                    <div key={index} className="card" style={{ borderColor: getScoreColor(item.match_score), borderWidth: 2 }}>
+                                        <div style={{ fontSize: "2rem", fontWeight: 700, color: getScoreColor(item.match_score) }}>{item.match_score}%</div>
+                                        <div style={{ fontWeight: 600 }}>{item.role}</div>
+                                        <p className="body-text" style={{ fontSize: "0.8rem" }}>{item.key_reason}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </UserContextManager>
     );
 }

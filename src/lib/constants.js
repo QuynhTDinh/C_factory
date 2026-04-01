@@ -77,3 +77,30 @@ export const SCORING_RUBRIC = [
     { level: 4, label: "Tối ưu", detail: "Khả năng tìm ra lỗi và cải tiến quy trình để tăng hiệu suất/chất lượng." },
     { level: 5, label: "Chuyên gia", detail: "Cố vấn, đào tạo và định hướng giải pháp cho hệ thống lớn." }
 ];
+
+export const INDUSTRIES = [
+    "Công nghệ thông tin / Phần mềm",
+    "Sản xuất / Công nghiệp nặng",
+    "FMCG / Hàng tiêu dùng nhanh",
+    "Dược phẩm / Y tế",
+    "Tài chính / Ngân hàng",
+    "Giáo dục / Đào tạo",
+    "Năng lượng / Dầu khí",
+    "Logistics / Chuỗi cung ứng",
+    "Khác"
+];
+
+export const SENIORITY_LEVELS = [
+    "Sinh viên / Thực tập sinh",
+    "Mới tốt nghiệp (Freshman)",
+    "Nhân viên (Junior/Middle)",
+    "Chuyên gia / Trưởng nhóm (Senior/Lead)",
+    "Quản lý / Giám đốc (Manager/Director)"
+];
+
+export const USER_INTENTS = [
+    "Tìm kiếm cơ hội việc làm mới",
+    "Đánh giá & Phát triển bản thân",
+    "Tuyển dụng & Phân tích ứng viên",
+    "Tham khảo / Nghiên cứu thị trường"
+];

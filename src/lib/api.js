@@ -5,22 +5,22 @@
  */
 
 /** Phân tích JD */
-export async function decodeJD({ content, role, company, industry }) {
+export async function decodeJD({ content, role, company, industry, profile }) {
     const response = await fetch("/api/decode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, role, company, industry }),
+        body: JSON.stringify({ content, role, company, industry, profile }),
     });
     if (!response.ok) throw new Error(await response.text());
     return response.json();
 }
 
 /** So sánh nhiều JD với CV */
-export async function compareJDs({ cv_content, jds }) {
+export async function compareJDs({ cv_content, jds, profile }) {
     const response = await fetch("/api/compare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cv_content, jds }),
+        body: JSON.stringify({ cv_content, jds, profile }),
     });
     if (!response.ok) throw new Error(await response.text());
     return response.json();

@@ -103,7 +103,7 @@ Nhiệm vụ: So sánh và xếp hạng nhiều cơ hội việc làm cho một 
 export async function POST(request) {
     try {
         const body = await request.json();
-        const { cv_content, jds } = body;
+        const { cv_content, jds, profile } = body;
 
         if (!cv_content || cv_content.trim().length < 20) {
             return NextResponse.json({ success: false, error: "CV quá ngắn" }, { status: 400 });
@@ -120,6 +120,7 @@ export async function POST(request) {
             const userPrompt = `## JD cần phân tích
 ${jd.role ? `Chức danh: ${jd.role}` : ""}
 ${jd.company ? `Công ty: ${jd.company}` : ""}
+${profile ? `## Bối cảnh Ứng viên (Hồ sơ của người đang xem)\n- Ngành: ${profile.industry}\n- Cấp bậc: ${profile.seniority}\n` : ""}
 ${jd.content}
 ---
 Hãy phân tích JD trên và trả về JSON.`;
@@ -152,6 +153,8 @@ ${cv_content}
 ### Năng lực yêu cầu:
 ${comps || "Không có dữ liệu"}
 
+---
+${profile ? `## Bối cảnh Ứng viên\n- Ngành: ${profile.industry}\n- Cấp bậc: ${profile.seniority}\n` : ""}
 ---
 Hãy phân tích mức độ phù hợp và trả về JSON.`;
 

@@ -1,4 +1,6 @@
 import "./globals.css";
+import { Providers } from "@/components/Providers";
+import Header from "@/components/Header";
 
 export const metadata = {
   title: "C Factory — Competency Contextual Factory",
@@ -10,25 +12,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <body>
-        <nav className="navbar">
-          <div className="navbar-inner">
-            <a href="/" className="navbar-brand">
-              C Factory
-            </a>
-            <ul className="navbar-nav">
-              <li>
-                <a href="/decode">Phân tích JD</a>
-              </li>
-              <li>
-                <a href="/compare">So sánh</a>
-              </li>
-              <li>
-                <a href="/history">Lịch sử</a>
-              </li>
-            </ul>
-          </div>
-        </nav>
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );
