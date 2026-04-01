@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { compareJDs } from "@/lib/api";
 import { logTrace } from "@/lib/tracing";
 import UserContextManager from "@/components/UserContextManager";
