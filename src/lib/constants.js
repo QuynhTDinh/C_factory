@@ -105,4 +105,4 @@ export const USER_INTENTS = [
     "Tham khảo / Nghiên cứu thị trường"
 ];
 
-export const ADMIN_EMAILS = ["quynhtp.hust@gmail.com", "quynhdtttk104@gmail.com"];
+export const ADMIN_EMAILS = ["quynhdtttk104@gmail.com"];
