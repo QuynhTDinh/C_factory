@@ -1,16 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { fetchActivities } from "@/lib/db";
 import ReportView from "@/components/ReportView";
+import { ADMIN_EMAILS } from "@/lib/constants";
 
 export default function AdminPage() {
+    const { data: session } = useSession();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [password, setPassword] = useState("");
     const [isAuth, setIsAuth] = useState(false);
     const [filter, setFilter] = useState("All");
+
+    useEffect(() => {
+        // 1. Check persistent auth
+        const wasAuth = localStorage.getItem("admin_auth") === "true";
+        if (wasAuth) setIsAuth(true);
+
+        // 2. Check SSO bypass
+        if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
+            setIsAuth(true);
+        }
+    }, [session]);
 
     useEffect(() => {
         if (isAuth) loadRecords();

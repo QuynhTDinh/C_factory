@@ -2,6 +2,7 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
+import { ADMIN_EMAILS } from "@/lib/constants";
 
 export default function Header() {
     const { data: session, status } = useSession();
@@ -18,6 +19,9 @@ export default function Header() {
                     <li><Link href="/compare">So sánh</Link></li>
                     <li><Link href="/history">Lịch sử</Link></li>
                     <li><Link href="/profile" style={{ fontWeight: '600', color: 'var(--accent-blue)' }}>Hồ sơ của tôi</Link></li>
+                    {session?.user?.email && ADMIN_EMAILS.includes(session.user.email) && (
+                        <li><Link href="/admin" style={{ color: 'var(--accent-orange)', fontWeight: '700' }}>Admin</Link></li>
+                    )}
                 </ul>
 
                 <div className="navbar-auth" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
